@@ -254,8 +254,8 @@ var dbugDetect = 0; // tmp
 
         var result = filter.handler(elem);
         if (result) {
-          if (!filter.domain.test(document.domain))
-            console.warn("Text Ad failed filter-test: ", document.URL, filter);
+/*          if (!filter.domain.test(document.domain))
+            console.warn("Text Ad failed filter-test: ", document.URL, filter);*/
           return result;
         }
       }
@@ -281,6 +281,35 @@ var dbugDetect = 0; // tmp
     return [ad];
   }
 
+  var bingText = function(dom) {
+      console.log("bingText");
+  }
+
+  var askText = function(dom) {
+
+      var title = $find(dom, 'a.test_titleLink.d_');
+      var site = $find(dom, 'a.test_domainLink.e_');
+      var text = $find(dom, 'span.descText');
+      var text2 = $find(dom, 'span.v_');
+      
+      var textStr = "";
+      if (text2 && text2.length) {
+          textStr = $text(text) + $text(text2);
+      }
+      else {
+          textStr = $text(text);
+      }
+
+      if (text.length && site.length && title.length) {
+          var ad = createTextAd('ask', $attr(title, 'href'),
+              $text(title), textStr, $text(site));
+      } else {
+          console.warn('TEXT: askTextHandler.fail: ', text, site, document.URL, document.title);
+      }
+
+      return [ad];
+  }
+
   var filters = [{
     selector: 'li.ads-ad',
     handler: googleText,
@@ -296,6 +325,16 @@ var dbugDetect = 0; // tmp
     handler: yahooText,
     name: 'yahoo',
     domain: /.*\.yahoo\.com$/i
+  }, {
+    selector: 'li.b_ad',
+    handler: bingText,
+    name: 'bing',
+    domain: 'www.bing.com'
+  }, {
+    selector: '.ad.a_',
+    handler: askText,
+    name: 'ask',
+    domain: 'www.ask.com'
   }];
 
 
