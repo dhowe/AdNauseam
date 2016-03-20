@@ -317,7 +317,7 @@ var dbugDetect = 0; // tmp
     handler: askText,
     name: 'ask',
     domain: /^.*\.ask\.com$/i
-  {
+  }, {
     selector: '.ad',
     handler: aolText,
     name: 'aol',
