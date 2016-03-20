@@ -30,10 +30,11 @@ var dbugDetect = 0; // tmp
       return checkImages(elem, [elem]);
     }
 
-    var imgs = elem.querySelectorAll('img');
-    if (imgs.length) {
-
-      return checkImages(elem, imgs);
+    if (document.domain != 'www.bing.com') {
+        var imgs = elem.querySelectorAll('img');
+        if (imgs.length) {
+            return checkImages(elem, imgs);
+        }
     }
 
     //console.log("TRYING: ", elem);
@@ -278,8 +279,8 @@ var dbugDetect = 0; // tmp
 
         var result = filter.handler(elem);
         if (result) {
-          if (!filter.domain.test(document.domain))
-            console.warn("Text Ad failed filter-test: ", document.URL, filter);
+/*          if (!filter.domain.test(document.domain))
+            console.warn("Text Ad failed filter-test: ", document.URL, filter);*/
           return result;
         }
       }
@@ -305,6 +306,23 @@ var dbugDetect = 0; // tmp
     return [ad];
   }
 
+  var bingText = function (dom) {
+
+    console.log("bingText");
+    var ad, title = $find(dom, 'h2 a'),
+      text = $find(dom, 'div.b_caption p'),
+      site = $find(dom, 'div.b_attribution cite');
+
+    if (text.length && site.length && title.length) {
+      ad = createTextAd('bing', $attr(title, 'href'),
+        $text(title), $text(text), $text(site));
+    } else {
+      console.warn('TEXT: bingTextHandler.fail: ', text, site, document.URL, document.title);
+    }
+
+    return [ad];
+  }
+
   var googleRegex = /^(www\.)*google\.((com\.|co\.|it\.)?([a-z]{2})|com)$/i; 
 
   var filters = [{
@@ -317,7 +335,7 @@ var dbugDetect = 0; // tmp
     handler: askText,
     name: 'ask',
     domain: /^.*\.ask\.com$/i
-  {
+  }, {
     selector: '.ad',
     handler: aolText,
     name: 'aol',
@@ -327,6 +345,11 @@ var dbugDetect = 0; // tmp
     handler: yahooText,
     name: 'yahoo',
     domain: /^.*\.yahoo\.com/i
+  }, {
+    selector: 'li.b_ad',
+    handler: bingText,
+    name: 'bing',
+    domain: 'www.bing.com'
   }];
 
   var createImgAd = function (network, target, img) {
