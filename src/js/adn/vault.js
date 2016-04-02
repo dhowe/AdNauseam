@@ -120,7 +120,8 @@
 
   function doLayout(adsets) {
 
-    //console.log('Vault.doLayout: ' + adsets.length + " ad-sets, total=" + numFound(adsets));
+    if(typeof adsets != "undefined")
+      console.log('Vault.doLayout: ' + adsets.length + " ad-sets, total=" + numFound(adsets));
 
     adsets = adsets || [];
 
