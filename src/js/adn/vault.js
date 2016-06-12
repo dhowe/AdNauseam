@@ -1466,9 +1466,8 @@
 
       var filtered = dateFilter(gMin, gMax);
 
-      // only create the adsets once, else filter
-      return gAdSets ? filterAdSets(filtered) :
-        (gAdSets = createAdSets(filtered));
+      centerContainer();
+      return gAdSets = createAdSets(filtered);
     }
 
     function centerContainer() {
