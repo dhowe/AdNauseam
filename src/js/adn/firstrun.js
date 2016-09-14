@@ -43,8 +43,6 @@
   function changeDNTexceptions(bool){
     changeUserSettings("disableClicksForDNT", bool);
     changeUserSettings("disableHidingForDNT", bool);
-    // next line redundant when 'respectDNT' completely replaces by 'disableClicksForDNT' and 'disableHidingForDNT' in background.js/Settings
-    changeUserSettings("respectDNT", bool);
   }
 
   function toggleDNTException(bool) {
@@ -54,7 +52,6 @@
       dntInputWrapper.style.display = "block";
       // this runs once only:
       if(!dntRespectAppeared){
-        // changeUserSettings("respectDNT", true);
         changeDNTexceptions(true);
         dntInput.checked = true;
         dntRespectAppeared = true;
