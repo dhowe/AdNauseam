@@ -40,6 +40,13 @@
     return switchValue('hidingAds') || switchValue('clickingAds');
   }
 
+  function changeDNTexceptions(bool){
+    changeUserSettings("disableClicksForDNT", bool);
+    changeUserSettings("disableHidingForDNT", bool);
+    // next line redundant when 'respectDNT' completely replaces by 'disableClicksForDNT' and 'disableHidingForDNT' in background.js/Settings
+    changeUserSettings("respectDNT", bool);
+  }
+
   function toggleDNTException(bool) {
     var dntInput = uDom('#dnt-exception')["nodes"][0];
     var dntInputWrapper = dntInput.parentElement;
@@ -47,7 +54,8 @@
       dntInputWrapper.style.display = "block";
       // this runs once only:
       if(!dntRespectAppeared){
-        changeUserSettings("respectDNT", true);
+        // changeUserSettings("respectDNT", true);
+        changeDNTexceptions(true);
         dntInput.checked = true;
         dntRespectAppeared = true;
       }
@@ -66,11 +74,19 @@
       uNode.prop('checked', details[uNode.attr('data-setting-name')] === true)
         .on('change', function () {
 
-          changeUserSettings(
-            this.getAttribute('data-setting-name'),
-            this.checked
-          );
+          if(this.getAttribute('data-setting-name') === "respectDNT"){
+            changeDNTexceptions(this.checked);
+          }else{
+            changeUserSettings(
+              this.getAttribute('data-setting-name'),
+              this.checked
+            );
+          }
 
+          if (!hideOrClick()) {
+            changeDNTexceptions(false);
+          }
+          
           toggleDNTException();
 
         });
@@ -84,9 +100,6 @@
     uDom('#confirm-close').on('click', function (e) {
       e.preventDefault();
       // handles #371
-      if (!hideOrClick()) {
-        changeUserSettings('respectDNT', false);
-      }
       window.open(location, '_self').close();
     });
 
