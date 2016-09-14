@@ -9,7 +9,7 @@
   /******************************************************************************/
 
   var messager = vAPI.messaging;
-
+  var dntRespectAppeared = false;
   /******************************************************************************/
   var changeUserSettings = function (name, value) {
 
@@ -41,9 +41,16 @@
   }
 
   function toggleDNTException(bool) {
-    var dntInputWrapper = uDom('#dnt-exception')["nodes"][0].parentElement;
+    var dntInput = uDom('#dnt-exception')["nodes"][0];
+    var dntInputWrapper = dntInput.parentElement;
     if (hideOrClick()) {
       dntInputWrapper.style.display = "block";
+      // this runs once only:
+      if(!dntRespectAppeared){
+        changeUserSettings("respectDNT", true);
+        dntInput.checked = true;
+        dntRespectAppeared = true;
+      }
     } else {
       dntInputWrapper.style.display = "none";
     }
