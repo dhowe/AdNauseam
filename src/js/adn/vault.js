@@ -1637,4 +1637,11 @@
 
   /********************************************************************/
 
+  //callback functions that are called here are located in js/adn/shared.js
+  $('#export').on('click', exportToFile);
+  $('#import').on('click', startImportFilePicker);
+  $('#importFilePicker').on('change', handleImportFilePicker);
+  $('#reset').on('click', clearAds);
+
+
 })();
