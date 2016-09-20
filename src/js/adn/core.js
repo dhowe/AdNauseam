@@ -34,7 +34,7 @@
   ];
 
   // default rules for adnauseam's firewall
-  var defaultDynamicFilters = ['nytimes.com nytimes.com * allow'];
+  var defaultDynamicFilters = ['nytimes.com https://et.nytimes.com inline-script allow','nytimes.com https://et.nytimes.com 1p-script allow']
 
   // allow blocks only from this set of lists
   var enabledBlockLists = ['My filters', 'EasyPrivacy',
