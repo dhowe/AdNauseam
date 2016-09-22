@@ -44,7 +44,8 @@
     animateMs = 2000,
     viewState = {},
     userZoomScale = Zooms[Zooms.indexOf(100)], // determined by mousewheel
-    zoomIdx = 0; // determined by zoom in / out buttons
+    zoomIdx = 0, // determined by zoom in / out buttons
+    draggingVault = false;
 
   var gAds, gAdSets, gMin, gMax; // stateful
 
@@ -598,9 +599,12 @@
   function enableLightbox() {
 
     $('.item').click(function (e) {
-
-      e.stopPropagation();
-      lightboxMode($(this));
+      if(!draggingVault){
+        e.stopPropagation();
+        lightboxMode($(this));
+      }else{
+        draggingVault = false;
+      }
     });
 
     if (EnableContextMenu) {
@@ -820,7 +824,6 @@
   function lightboxMode($selected) {
 
     if ($selected && !$selected.hasClass('inspected')) {
-
       var inspectedGid = parseInt($selected.attr('data-gid'));
 
       selectedAdSet = findAdSetByGid(inspectedGid); // throws
@@ -1074,22 +1077,39 @@
     /////////// DRAG-STAGE ///////////
     var offsetX = 0;
     var offsetY = 0;
+    var container_div = document.getElementById('container');
 
-    document.onmousedown = function(e) {
+    container_div.addEventListener('mousedown', mouseDown, false);
+    window.addEventListener('mouseup', mouseUp, false);
+
+    function mouseUp()
+    {
+        window.removeEventListener('mousemove', divMove, true);
+    }
+
+
+    function mouseDown(e){
+      // mouseJustDown = true;
+      window.addEventListener('mousemove', divMove, true);
       offsetX = e.pageX;
       offsetY = e.pageY;
-    };
+    }
+    
+    var divMove = function(e){
+        draggingVault = true;
+        
+        var x_change = e.pageX - offsetX;
+        var y_change = e.pageY - offsetY;
 
-    document.onmouseup   = function(e) {
-      var style = window.getComputedStyle(document.querySelector('#container'), null),
-             dm = document.querySelector('#container');
+        var ml = parseInt(container_div.style.getPropertyValue("margin-left"));
+        var mt = parseInt(container_div.style.getPropertyValue("margin-top"));
 
-      var x = parseInt(style.getPropertyValue('margin-left'));
-      var y = parseInt(style.getPropertyValue('margin-top'));
+        container_div.style.marginLeft = (ml+=x_change) + 'px';
+        container_div.style.marginTop = (mt+=y_change) + 'px';
 
-      dm.style.marginLeft = (x + e.pageX - offsetX) + 'px';
-      dm.style.marginTop = (y + e.pageY - offsetY) + 'px';
-    };
+        offsetX = e.pageX;
+        offsetY = e.pageY;      
+    }
 
     /////////// ZOOM-STAGE ///////////
 
