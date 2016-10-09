@@ -42,9 +42,11 @@ var whitelistChanged = function() {
     var s = textarea.value.trim();
     var changed = s === cachedWhitelist;
     var bad = reUnwantedChars.test(s);
-    uDom.nodeFromId('whitelistApply').disabled = changed || bad;
-    uDom.nodeFromId('whitelistRevert').disabled = changed;
     textarea.classList.toggle('bad', bad);
+
+    if(s != cachedWhitelist) uDom('#buttonsTopRight').removeClass('disabled');
+    else uDom('#buttonsTopRight').addClass('disabled');
+
 };
 
 /******************************************************************************/

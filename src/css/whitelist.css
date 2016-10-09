@@ -7,11 +7,49 @@ div > p:last-child {
 #whitelist {
     box-sizing: border-box;
     font-size: small;
-    height: 60vh;
-	text-align: left;
+    height: 45vh;
+    text-align: left;
     white-space: pre;
     width: 100%;
     }
 #whitelist.bad {
     background-color: #fee;
+    }
+
+#lists {
+    padding-left: 0px;
+    /*next line for space between two sections*/
+    margin-bottom: 10vh;
+}
+
+#lists > .groupEntry > .geName {
+    font-size: 170%;
+}
+
+#lists > .groupEntry > .geCount {
+    font-size: 120%;
+}
+
+#lists > .groupEntry > .geName:before {
+    content: "";
+}
+
+#lists > .groupEntry > ul{
+    margin: 0.9em 0 0 0;
+}
+
+li.listEntry{
+    margin-left: 1.8em;
+}
+/*#whitelistApply{
+    float:right;
+}*/
+#buttonsTopRight {
+    display: initial;
+    position: fixed;
+    right: 1em;
+    z-index: 10;
+    }
+#buttonsTopRight.disabled {
+    display: none;
     }

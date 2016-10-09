@@ -10,6 +10,15 @@
 </head>
 
 <body>
+  <div id="buttonsTopRight" class="disabled">
+    <!-- <button id="buttonApply" class="important" data-i18n="3pApplyChanges"></button> -->
+    <!-- <p> -->
+      <button id="whitelistApply" class="important" type="button" data-i18n="whitelistApply"></button>&ensp;
+      <button id="whitelistRevert" class="important" type="button" data-i18n="genericRevert"></button>
+    <!-- </p> -->
+
+  </div>
+  
 
   <ul id="lists"><li class="groupEntry"><span class="geName">External Whitelists</span>
     <span class="geCount dim">(1)</span>
@@ -31,10 +40,10 @@
 <div id="cloudWidget" class="hide" data-cloud-entry="whitelistPane"></div>
 
 <p data-i18n="whitelistPrompt"></p>
-<p>
+<!-- <p>
     <button id="whitelistApply" class="custom important" type="button" disabled="true" data-i18n="whitelistApply"></button>&ensp;
     <button id="whitelistRevert" class="custom" type="button" disabled="true" data-i18n="genericRevert"></button>
-</p>
+</p> -->
 <p><textarea id="whitelist" dir="auto" spellcheck="false"></textarea></p>
 <p>
     <button id="importWhitelistFromFile" class="custom" data-i18n="whitelistImport"></button>&ensp;
