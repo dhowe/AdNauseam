@@ -189,7 +189,7 @@
       var $ad = updateAdClasses(ad);
 
       // update the title
-      $ad.descendants('.title').text(getTitle(ad));
+      $ad.descendants('.title').html(getTitle(ad));
 
       // update the url
       $ad.descendants('cite').text(targetDomain(ad));
@@ -336,7 +336,7 @@
 
     uDom(document.createElement('span'))
       .addClass('title')
-      .text(ad.title ? ad.title : "#" + ad.id)
+      .html(ad.title ? ad.title : "#" + ad.id)
       .appendTo($a);
 
     uDom(document.createElement('cite'))
