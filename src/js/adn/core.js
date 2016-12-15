@@ -20,7 +20,9 @@
     pollQueueInterval = 5000,
     profiler = +new Date(),
     strictBlockingDisabled = false,
-    repeatVisitInterval = Number.MAX_VALUE;
+    repeatVisitInterval = Number.MAX_VALUE,
+    tsOfLastPageLoad = 0,
+    timeBeforeVisitingAds = 20000;
 
   var xhr, idgen, admap, inspected, listEntries, firewall;
 
@@ -201,8 +203,10 @@
     var next, pending = pendingAds(),
       settings = µb.userSettings;
 
-    if (pending.length && settings.clickingAds && !isAutomated()) { // no visits if automated
+    // idle?
+    var timeSinceLastPageLoad = millis() - tsOfLastPageLoad;
 
+    if (pending.length && settings.clickingAds && !isAutomated() && timeSinceLastPageLoad >= timeBeforeVisitingAds) { // no visits if automated
       // if an unvisited ad is being inspected, visit it next
       if (visitPending(inspected)) {
 
@@ -215,7 +219,7 @@
       }
 
       visitAd(next);
-    }
+  }
 
     // next poll
     setTimeout(pollQueue, Math.max(1, interval - (millis() - lastActivity)));
@@ -1118,6 +1122,7 @@
 
   // Called when new top-level page is loaded
   exports.onPageLoad = function (tabId, requestURL) {
+    tsOfLastPageLoad = millis();
 
     var ads = adlist(requestURL); // all ads for url
 
