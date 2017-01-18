@@ -60,13 +60,16 @@ var stopWorker = function() {
 
 /******************************************************************************/
 
-var initWorker = function(callback) {
+var initWorker = function(callback, force) {
+    
+    // console.log("worker",worker,"needLists",needLists);
+    
     if ( worker === null ) {
         worker = new Worker('js/reverselookup-worker.js');
         worker.onmessage = onWorkerMessage;
     }
 
-    if ( needLists === false ) {
+    if ( needLists === false && force != true) {
         callback();
         return;
     }

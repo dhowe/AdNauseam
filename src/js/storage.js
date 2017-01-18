@@ -694,6 +694,9 @@
     };
 
     this.loadFilterLists(onFiltersReady);
+
+    // console.log("Reload filter lists for adnauseam");
+    µBlock.adnauseam.onListsLoaded(false);//ADN
 };
 
 /******************************************************************************/
