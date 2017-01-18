@@ -1020,7 +1020,8 @@
   var listsForFilter = function (compiledFilter) {
 
     var entry, content, pos, c, lists = [];
-
+    
+    console.log(listEntries);
     for (var path in listEntries) {
 
       entry = listEntries[path];
@@ -1272,11 +1273,12 @@
 
   exports.onListsLoaded = function (firstRun) {
 
-    console.log('onListsLoaded:', firstRun);
-    µb.staticFilteringReverseLookup.initWorker(function (entries) {
+    // console.log('onListsLoaded:', firstRun);
+
+     var onEntriesReady = function (entries) {
 
       listEntries = entries;
-      //console.log('listEntries:', listEntries);
+      // console.log('listEntries:', listEntries);
       var keys = Object.keys(entries);
       log("[LOAD] Compiled " + keys.length +
         " 3rd-party lists in " + (+new Date() - profiler) + "ms");
@@ -1285,7 +1287,10 @@
       verifySettings();
       verifyLists(µb.remoteBlacklists);
       µb.adnauseam.dnt.updateFilters();
-    });
+    };
+
+    //force initWorker
+    µb.staticFilteringReverseLookup.initWorker(onEntriesReady, !firstRun)
 
     if (firstRun && !isAutomated()) {
 
