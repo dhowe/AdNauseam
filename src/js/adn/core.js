@@ -1021,7 +1021,6 @@
 
     var entry, content, pos, c, lists = [];
     
-    console.log(listEntries);
     for (var path in listEntries) {
 
       entry = listEntries[path];
