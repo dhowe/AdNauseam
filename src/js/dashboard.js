@@ -105,6 +105,7 @@
     window.addEventListener('resize', resizeFrame);
     uDom('.tabButton').on('click', onTabClickHandler);
     uDom('#notifications').on('click', resizeFrame);
+    window.addEventListener('popstate', loadDashboardPanel);
 
      vAPI.messaging.send(
       'adnauseam', {
