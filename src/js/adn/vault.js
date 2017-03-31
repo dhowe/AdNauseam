@@ -1735,8 +1735,24 @@
   }, renderAds);
 
   /********************************************************************/
+  // testing the possibility of downloading the image files
+  // function downloadImageFiles(){
+  //     var imgElems = $('.item .ad img');
+  //     console.log(imgElems);
+  //
+  //   //   messager.send('adnauseam', {
+  //   //     what: 'adsForVault'
+  //   // }, function(json){
+  //   //     var ads = json.data; // store
+  //   //
+  //   //     // alert("got", ads.length, "ads");
+  //   // });
+  // }
+  /********************************************************************/
 
   $('#export').on('click', exportToFile);
+  // $('#export').on('click', downloadImageFiles);
+
   $('#import').on('click', startImportFilePicker);
   $('#importFilePicker').on('change', handleImportFilePicker);
   $('#reset').on('click', clearAds);
