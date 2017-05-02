@@ -99,35 +99,24 @@
 
 /******************************************************************************/
 
-var frequencyTagConverter = function(input) {
-    var match = {
-        all: 1,
-        most: 0.75,
-        some: 0.3,
-        occasional: 0.1
-    }
-    
-    if (typeof input === "string") return match[input];
-    else {
-        for (var prop in match) {
-            if (match[prop] === input) return prop;
-        }
-    }
+var ClickProbabilityChanged = function() {
+  var selection = uDom('input[id="slider"]');
+  var slideVal = selection.nodes[0].value;
+  selection.val(slideVal)
 
-}
+  messager.send('dashboard', {
+    what: 'userSettings',
+    name: 'clickProbability',
+    value: Number(slideVal)
+  });
+
+};
+
 /******************************************************************************/
 
-  var ClickProbabilityChanged = function() {
-    var selection = uDom('input[name="click-frequency"]:checked'),
-        tag = selection.attr("id").replace("click-frequency-","");
-    
-    messager.send('dashboard', {
-      what: 'userSettings',
-      name: 'clickProbability',
-      value: frequencyTagConverter(tag)
-    });
-  
-  };
+/******************************************************************************/
+
+
 
   /******************************************************************************/
 
@@ -162,7 +151,8 @@ var frequencyTagConverter = function(input) {
   var onUserSettingsReceived = function (details) {
 
     // console.log('onUserSettingsReceived', details);
-
+    var selection = uDom('input[id="slider"]')
+    selection.val(details.clickProbability);
     uDom('[data-setting-type="bool"]').forEach(function (uNode) {
 
       var name = uNode.attr('data-setting-name'), value = details[name];
@@ -177,12 +167,12 @@ var frequencyTagConverter = function(input) {
           );
         });
 
-        var id = "#click-frequency-" + frequencyTagConverter(details.clickProbability);
+        var id = "#slider";
         uDom(id).prop('checked',true);
 
     });
 
-    uDom('input[type="radio"]').on('click',ClickProbabilityChanged);
+    uDom('input[type="range"]').on('change', ClickProbabilityChanged);
 
     uDom('[data-setting-name="noLargeMedia"] ~ label:first-of-type > input[type="number"]')
       .attr('data-setting-name', 'largeMediaSize')
