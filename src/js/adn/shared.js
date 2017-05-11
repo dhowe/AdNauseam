@@ -25,7 +25,7 @@
 
 /******************************* Polyfill ***********************************/
 
-if (Array.prototype.contains instanceof Function === false) {
+if (Array.prototype.includes( Function === false)) {
 
   Array.prototype.contains = function (a) {
     var b = this.length;
