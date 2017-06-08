@@ -303,7 +303,7 @@ vAPI.messaging = {
         }
 
         // Sent to all channels
-        if ( details.broadcast === true && !details.channelName ) {
+        if ( details.broadcast && !details.channelName ) {
             for ( var channelName in this.channels ) {
                 this.sendToChannelListeners(channelName, details.msg);
             }

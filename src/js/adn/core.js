@@ -1365,6 +1365,10 @@
     return result && result.length && !isBlockableRequest(context);
   };
 
+  exports.isAllowedExceptions = function (url) {
+    return url && typeof allowedExceptions[url] !== undefined;
+  }
+
   exports.itemInspected = function (request, pageStore, tabId) {
 
     if (request.id) {
@@ -1960,15 +1964,14 @@
   var exportAds = exports.exportAds = function (request) {
 
     var count = adCount(),
-      jsonData = admapToJSON(request.sanitize),
-      filename = (request && request.filename) || getExportFileName(),
-      url = URL.createObjectURL(new Blob([jsonData], { type: "text/plain" }));
-
-    vAPI.download({ 'url': url, 'filename': filename });
+      jsonData = admapToJSON(request.sanitize);
 
     if (!production && request.includeImages) saveVaultImages();
 
-    log('[EXPORT] ' + count + ' ads to ' + filename);
+    log('[EXPORT] ' + count + ' ads');
+
+    return admapToJSON(request.sanitize);
+
   };
 
   exports.adsForPage = function (request, pageStore, tabId) {
