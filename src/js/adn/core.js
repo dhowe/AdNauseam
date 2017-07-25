@@ -619,20 +619,21 @@
   var validateTarget = function (ad) {
 
     var url = ad.targetUrl;
+    //RegExp found from @dperini at https://gist.github.com/dperini/729294
+    var validUrl = new RegExp(/^(?:(?:https?):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$/i);
 
-    if (!/^http/.test(url)) {
+    if (validUrl.test(url)) {
 
       // Here we try to extract an obfuscated URL
+
       var idx = url.indexOf('http');
-      if (idx != -1) {
 
-        ad.targetUrl = decodeURIComponent(url.substring(idx));
-        log("Ad.targetUrl updated: " + ad.targetUrl);
+      ad.targetUrl = decodeURIComponent(url.substring(idx));
+      log("Ad.targetUrl updated: " + ad.targetUrl);
 
-      } else {
+    } else {
 
-        return warn("Invalid TargetUrl: " + url);
-      }
+      return warn("Invalid TargetUrl: " + url);
     }
 
     // ad.targetUrl = trimChar(ad.targetUrl, '/'); #751
