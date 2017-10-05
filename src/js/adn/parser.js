@@ -168,12 +168,16 @@
       var ad, iw = img.naturalWidth || -1, ih = img.naturalHeight || -1,
         minDim = Math.min(iw, ih), maxDim = Math.max(iw, ih);
 
-      function isIgnorable(imgSrc) {
+      function isIgnorable(imgSrc, imgWidth, imgHeight) {
         for (var i = 0; i < ignorableImages.length; i++) {
           if (imgSrc.includes(ignorableImages[i])) {
             return true;
           }
         }
+        //facebook profile pic
+        if (imgSrc.includes("scontent") && imgSrc.includes("fbcdn.net") && imgWidth < 150) {
+            return true;
+          }
         return false;
       }
 
@@ -183,7 +187,7 @@
         return warnP('Ignoring Ad with size ' + iw + 'x' + ih + ': ', src, targetUrl);
       }
 
-      if (isIgnorable(src)) { // check ignorables
+      if (isIgnorable(src,iw,ih)) { // check ignorables
 
         return warnP('Ignorable image: ' + src);
       }
