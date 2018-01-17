@@ -17,6 +17,8 @@ We conceptualize AdNauseam within a broader class of software systems that serve
 #### About the project
 --------
 
+[![Join the chat at https://gitter.im/dhowe/AdNauseam](https://badges.gitter.im/dhowe/AdNauseam.svg)](https://gitter.im/dhowe/AdNauseam?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 * Web Site:         http://adnauseam.io
 * Authors:          [Daniel C. Howe](http://rednoise.org/daniel), [Helen Nissenbaum](https://www.nyu.edu/projects/nissenbaum/) & [Mushon Zer-Aviv](http://mushon.com)
 * Developers:       [Sally Chen](https://github.com/cqx931), [Leon Eckert](https://github.com/leoneckert), [Cyrus Suen](https://github.com/CyrusSUEN)
