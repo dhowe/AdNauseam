@@ -1,7 +1,7 @@
 #!/bin/sh
 
 CHROME=/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome
-FIREFOX=/Applications/FirefoxNightly.app/Contents/MacOS/firefox-bin
+FIREFOX=/Applications/Firefox.app/Contents/MacOS/firefox-bin
 OPERA=/Applications/Opera.app/Contents/MacOS/Opera
 
 CHROME_PEM=./adnauseam.chromium.pem
@@ -46,15 +46,6 @@ fi
 ./tools/make-opera.sh
 "${OPERA}" "${OPERA_OPTS}"
 mv ${DES}/adnauseam.opera.nex ${ARTS}/adnauseam-${VERSION}.opera.nex
-
-
-# FIREFOX
-./tools/make-firefox.sh
-pushd ${DES}/adnauseam.firefox
-jpm xpi
-popd
-cp ${DES}/adnauseam.firefox/null.xpi ${ARTS}/adnauseam-${VERSION}.firefox-legacy.xpi
-
 
 # WEBEXT
 ./tools/make-webext.sh all
