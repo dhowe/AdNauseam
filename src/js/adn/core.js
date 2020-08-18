@@ -20,6 +20,8 @@
   let lastActivity = 0;
   let lastUserActivity = 0;
   let listsLoaded = false;
+  let lastStorageUpdate = 0;
+  const updateStorageInterval = 1000 * 60 * 60; // 1h
   const notifications = [];
   const allowedExceptions = [];
   const maxAttemptsPerAd = 3;
@@ -608,9 +610,17 @@
 
   const storeUserData = function (immediate) {
 
-    // TODO: defer if we've recently written and !immediate
+    // defer if we've recently written and !immediate
+
     µb.userSettings.admap = admap;
-    vAPI.storage.set(µb.userSettings);
+    const now = millis();
+    if(immediate || (!immediate && now - lastStorageUpdate > updateStorageInterval)) {
+      vAPI.storage.set(µb.userSettings);
+      lastStorageUpdate = millis();
+    } else {
+      log("--Skip storage update--")
+    }
+
   }
 
   const validateTarget = function (ad) {
