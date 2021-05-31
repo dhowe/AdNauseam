@@ -285,6 +285,7 @@ g1.globo.com##.publicidade
 ##bing.com
 www.bing.com##.adbDef
 www.bing.com##.b_ad
+bing.com#@#.b_ad:remove()
 # blocking rule for anti-adblocking solutions for text ads on search page
 ||www.bing.com/rb/5j/*$script,domain=www.bing.com
 
