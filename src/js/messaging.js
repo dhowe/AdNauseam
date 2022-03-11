@@ -386,6 +386,7 @@ const popupDataFromTabId = function(tabId, tabTitle) {
         fontSize: µbhs.popupFontSize,
         godMode: µbhs.filterAuthorMode,
         netFilteringSwitch: false,
+        strictBlocked: false,
         rawURL: tabContext.rawURL,
         pageURL: tabContext.normalURL,
         pageHostname: rootHostname,
@@ -408,6 +409,7 @@ const popupDataFromTabId = function(tabId, tabTitle) {
     if ( pageStore ) {
         r.pageCounts = pageStore.counts;
         r.netFilteringSwitch = pageStore.getNetFilteringSwitch();
+        r.strictBlocked = pageStore.getIsPageStrictBlocked(); // ADN
         getHostnameDict(pageStore.getAllHostnameDetails(), r);
         r.contentLastModified = pageStore.contentLastModified;
         getFirewallRules(rootHostname, r);

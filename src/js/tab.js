@@ -610,7 +610,10 @@ housekeep itself.
         this.onGCBarrier = false;
         this.netFiltering = true;
         this.netFilteringReadTime = 0;
-
+        /* ADN - Strict Block List Filtering */
+        this.strictBlockFiltering = true;
+        this.strictBlockFilteringReadTime = 0;
+        /* end of ADN */
         tabContexts.set(tabId, this);
     };
 
@@ -681,6 +684,7 @@ housekeep itself.
     // root URL.
     TabContext.prototype.update = function() {
         this.netFilteringReadTime = 0;
+        this.strictBlockFilteringReadTime = 0; // Adn
         if ( this.stack.length === 0 ) {
             this.rawURL =
             this.normalURL =
@@ -748,6 +752,26 @@ housekeep itself.
         this.netFilteringReadTime = Date.now();
         return this.netFiltering;
     };
+
+    /* ADN */
+    TabContext.prototype.getIsPageStrictBlocked = function() {
+        if ( this.strictBlockFilteringReadTime > µb.strictBlockFilteringModifyTime ) {
+            return this.strictBlockFiltering;
+        }
+        // https://github.com/chrisaljoudi/uBlock/issues/1078
+        // Use both the raw and normalized URLs.
+        this.strictBlockFiltering = µb.getIsPageStrictBlocked(this.normalURL);
+        if (
+            this.strictBlockFiltering &&
+            this.rawURL !== this.normalURL &&
+            this.rawURL !== ''
+        ) {
+            this.strictBlockFiltering = µb.getIsPageStrictBlocked(this.rawURL);
+        }
+        this.strictBlockFilteringReadTime = Date.now();
+        return this.strictBlockFilteringFiltering;
+    };
+    /* End of ADN */
 
     // These are to be used for the API of the tab context manager.
 

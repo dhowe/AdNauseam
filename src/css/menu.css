@@ -296,7 +296,7 @@ header{
 #ad-list,
 #settings form{
   background: #000 url(../img/gray_grid.png);
-  height: 350px;
+  height: 360px;
   /* position: absolute; */
   overflow-y: auto;
   overflow-x: hidden;
@@ -679,40 +679,208 @@ span.adStatus:before {
   FOOTER
 ============================================================ */
 footer {
-  padding: 10px;
   background: #000;
-  height: 50px;
   bottom: 0;
   position: absolute;
   width:100%;
-  z-index:2;
+  z-index:200;
+  display: inline-block;
+  height: 40px;
+  width: 320px;
 }
-button.pause,
-button.resume,
-button.settings {
-  /*
-  width: 38%;
-  min-width: 100px;
-  float: left;
-  margin-right: 6px;
-  */
-  width: 28%;
-  min-width: 69px;
-  float: left;
-  margin-right: 6px;
+
+.footer-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+  cursor: pointer;
 }
-button:disabled {
-  opacity:.4;
-  cursor: default;
+
+footer > span  {
+  height: 32px;
+  position: absolute;
+  top: 4px;
 }
-button.about,
-button.help {
-  width: 27px;
-  float: left;
+
+#btn-settings {
+  left: 3px;
 }
-button.about {
-  margin-right: 6px;
+
+#btn-ublock {
+  right: 3px;
 }
+
+.btn_radio_label {
+  font-family: bebas_neue,sans-serif;
+  font-size: 20px;
+  display: block;
+  -webkit-user-select: none; /* Safari */        
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
+}
+
+#state_btn-wrappper {
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;
+  border: 2px solid #0076FF;
+  border-radius: 5px;
+  font-family: bebas_neue,sans-serif;
+  background: none;
+  box-shadow: none;
+  color: #0076FF;
+  fill: #0076FF;
+  font-size: 20px;
+  padding: 0px;
+  width: 244px;
+}
+
+.btn_radio_wrapper {
+  position: relative;
+  display: block;
+}
+
+.btn_radio_wrapper-left {
+  width: 72px;
+}
+.btn_radio_wrapper-center {
+  width: 73px;
+}
+.btn_radio_wrapper-right {
+  width: 87px;
+}
+
+.popup_arrow {
+  position: absolute;
+  z-index: 9999;
+  right: 1px;
+  padding: 2px;
+  transform: rotate(180deg);
+}
+
+.popup_arrow:hover svg path {
+  stroke: white;
+}
+
+.popup_arrow svg {
+  transform: rotate(180deg);
+}
+
+.popup_arrow.open svg {
+  transform: rotate(0deg);
+}
+
+.btn_radio_wrapper-right label {
+  /* text-align: right !important; */
+}
+
+.btn_radio_wrapper::after {
+  content: none;
+}
+
+#state_btn-wrappper > .btn_radio_wrapper {
+  text-align: center;
+  display: inline-block;
+}
+
+.btn_radio {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  z-index: 9999;
+  margin: 0;
+  cursor: pointer;
+}
+
+#state_btn-wrappper label {
+  display: block;
+  border-radius: 3px;
+  margin: 2px 1px;
+  padding: 2px 1px;
+  width: 100%;
+  text-align: center;
+}
+
+.btn_radio:checked + .btn_radio_label {
+  background: #0076FF;
+  color: white;
+  fill: #000;
+  opacity: 1;
+}
+
+.btn_radio:checked + .btn_radio_label path {
+  stroke: white;
+}
+
+#state_btn-wrappper div {
+  display: inline-block;
+  position: relative;
+}
+
+.btn_radio:hover + .btn_radio_label {
+  color: white;
+}
+
+.btn_radio:checked + .btn_radio_label {
+  color: white;
+}
+
+#btn-settings:hover svg path {
+  stroke: white;
+}
+
+#btn-ublock:hover svg path {
+  fill: white;
+}
+
+.inner-popup {
+  display: inline-block;
+  text-align: center;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #333333;
+  background: black;
+}
+
+.inner-popup_wrapper {
+  position: absolute;
+  bottom: 42px;
+  left: 147px;
+}
+
+.inner-popup .btn_radio_wrapper:not(:first-child) {
+  border-top: 1px solid #333333;
+  z-index: 1;
+}
+
+.inner-popup .btn_radio_label {
+  padding: 6px;
+  width: 160px;
+  padding: 10px 0px;
+  color: #0076FF;
+}
+
+.inner-popup_wrapper::after {
+  z-index: 0;
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin-left: 0;
+  bottom: 1px;
+  border-radius: 1px;
+  left: 75%;
+  box-sizing: border-box;
+  border: 5px solid #fff;
+  border-color: transparent black black transparent;
+  transform-origin: 0 0;
+  transform: rotate(45deg);
+  box-shadow: 1px 1px 0px 0px #333333;
+}
+
 
 /* ============================================================
   PAUSED
@@ -730,13 +898,13 @@ button.about {
   display: block;
   position: absolute;
   top: 100px;
-  bottom: 50px;
+  bottom: 40px;
   left: 0;
   right: 0;
   background: #000 url(../img/gray_grid.png);
   opacity: 0.95;
   padding: 145px 5px 0;
-  z-index: 10000;
+  z-index: 100;
   text-align: center;
 }
 

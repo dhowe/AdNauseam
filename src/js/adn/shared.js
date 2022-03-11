@@ -350,6 +350,7 @@ const appendNotifyDiv = function (notify, template) {
   const reading_width = 251
   const remove_time = 2500
   const add_time = 500
+  const ad_list_height = 360
 
   // mouseover event to create slide animation
   uDom(node.nodes[0]).on('mouseover', "#notify-text", function (e) {
@@ -397,7 +398,7 @@ const appendNotifyDiv = function (notify, template) {
   uDom('#notifications').append(node);
 
   const h = document.getElementById('notifications').offsetHeight;
-  const newh = 350 - h;
+  const newh = ad_list_height - h;
   uDom('#ad-list').css('height', newh + 'px');
   // vAPI.i18n.render();
 }
