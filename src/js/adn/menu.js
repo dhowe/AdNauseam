@@ -72,12 +72,27 @@
       if (page === vAPI.getURL("vault.html") ||
         page.indexOf(vAPI.getURL("dashboard.html")) === 0 ||
         page.indexOf("chrome") === 0 || page.indexOf("about:") === 0) {
+          uDom('#state_btn-wrapper').addClass('disabled');
       }
     }
 
     uDom("#alert").addClass('hide'); // reset state
-    console.log("dval()", dval())
-    uDom('#main').toggleClass('disabled', dval());
+    uDom('#main').toggleClass('disabled', getIsDisabled());
+
+    // set button state
+    if (getIsDisabled()) {
+      // disabled 
+      uDom('#disable').prop('checked', true);
+    } else if (getIsStrictBlocked()) {
+      // strict blocked
+      uDom('#strict').prop('checked', true);
+    } else {
+      // active
+      uDom('#active').prop('checked', true);
+    }
+    
+    
+    // disable 3 state toggle button
 
     if (typeof json !== 'undefined' && json !== null) {
       ads = json.data;
@@ -376,9 +391,13 @@
     })
   };
 
-  const dval = function () {
+  const getIsDisabled = function () {
     return popupData.pageURL === '' || !popupData.netFilteringSwitch ||
       (popupData.pageHostname === 'behind-the-scene' && !popupData.advancedUserEnabled);
+  }
+
+  const getIsStrictBlocked = function () {
+    return popupData.strictBlocked
   }
 
   /******************************************************************************/

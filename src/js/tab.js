@@ -769,7 +769,7 @@ housekeep itself.
             this.strictBlockFiltering = µb.getIsPageStrictBlocked(this.rawURL);
         }
         this.strictBlockFilteringReadTime = Date.now();
-        return this.strictBlockFilteringFiltering;
+        return this.strictBlockFiltering;
     };
     /* End of ADN */
 

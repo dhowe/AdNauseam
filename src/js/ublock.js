@@ -140,6 +140,10 @@ const matchBucket = function(url, hostname, bucket, start) {
     let key = targetHostname;
     let directive = scope === 'page' ? targetURL : targetHostname;
 
+    // if the button is "active" or "disable", remove page from strictBlock
+    // this.removePageFromStrictBlockList(this.netStrictBlockList, targetURL, targetHostname) 
+    // end ADN
+
     // Add to directive list
     if ( newState === false ) {
         let bucket = netWhitelist.get(key);
@@ -148,8 +152,6 @@ const matchBucket = function(url, hostname, bucket, start) {
             netWhitelist.set(key, bucket);
         }
         bucket.push(directive);
-        // Adn, when whitelisted, remove page from StrictBlockList
-        µb.removePageFromStrictBlockList(this.netStrictBlockList, targetURL, targetHostname) // ADN
         this.saveWhitelist();
         return true;
     }
@@ -308,16 +310,16 @@ const matchBucket = function(url, hostname, bucket, start) {
     let key = hostname;
     for (;;) {
         if ( matchBucket(url, hostname, this.netStrictBlockList.get(key)) !== -1 ) {
-            return false;
+            return true;
         }
         const pos = key.indexOf('.');
         if ( pos === -1 ) { break; }
         key = key.slice(pos + 1);
     }
     if ( matchBucket(url, hostname, this.netStrictBlockList.get('//')) !== -1 ) {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 };
 
 µb.arrayFromStrictBlockList = µb.arrayFromWhitelist;
@@ -344,7 +346,7 @@ const matchBucket = function(url, hostname, bucket, start) {
     let directive = scope === 'page' ? targetURL : targetHostname;
 
     // Add to directive strictBlockList and remove from whitelist
-    if ( newState === false ) {
+    if ( newState === true ) {
         let bucket = this.netStrictBlockList.get(key);
         if ( bucket === undefined ) {
             bucket = [];
@@ -352,7 +354,7 @@ const matchBucket = function(url, hostname, bucket, start) {
         }
         bucket.push(directive);
         this.saveStrictBlockList();
-        this.removePageFromWhitelist(this.netWhitelist, targetURL, targetHostname)
+        // this.removePageFromWhitelist(this.netWhitelist, targetURL, targetHostname)
         return true;
     }
 
@@ -404,6 +406,7 @@ const matchBucket = function(url, hostname, bucket, start) {
 
 // Remove all directives which cause current URL to be whitelisted
 µb.removePageFromStrictBlockList = function (netStrictBlockList, targetURL, targetHostname) {
+    let directive = targetHostname;
     let key = targetHostname;
     for (;;) {
         const bucket = netStrictBlockList.get(key);

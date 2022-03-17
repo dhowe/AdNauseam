@@ -146,6 +146,18 @@ button.disabled {
   cursor: default;
 }
 
+#state_btn-wrapper.disabled {
+  border-color: #999;
+  color: #999;
+  fill: #999;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+#state_btn-wrapper.disabled .btn_radio:checked + .btn_radio_label {
+  background: #999;
+}
+
 a.hide {
   display: none;
 }
@@ -720,7 +732,7 @@ footer > span  {
   user-select: none; /* Standard */
 }
 
-#state_btn-wrappper {
+#state_btn-wrapper {
   left: 50%;
   transform: translateX(-50%);
   display: inline-block;
@@ -779,7 +791,7 @@ footer > span  {
   content: none;
 }
 
-#state_btn-wrappper > .btn_radio_wrapper {
+#state_btn-wrapper > .btn_radio_wrapper {
   text-align: center;
   display: inline-block;
 }
@@ -795,7 +807,7 @@ footer > span  {
   cursor: pointer;
 }
 
-#state_btn-wrappper label {
+#state_btn-wrapper label {
   display: block;
   border-radius: 3px;
   margin: 2px 1px;
@@ -815,7 +827,7 @@ footer > span  {
   stroke: white;
 }
 
-#state_btn-wrappper div {
+#state_btn-wrapper div {
   display: inline-block;
   position: relative;
 }

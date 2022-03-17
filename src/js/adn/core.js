@@ -1533,30 +1533,38 @@ const adnauseam = (function () {
     if (store) {
 
       store.toggleNetFilteringSwitch(request.url, request.scope, request.state);
+      µb.toggleStrictBlock(request.url, request.scope, false); // adn remove strictBlock
       updateBadges();
 
       // close whitelist if open (see gh #113)
       const wlId = getExtPageTabId("dashboard.html#whitelist.html");
       wlId && vAPI.tabs.replace(wlId, vAPI.getURL("dashboard.html"));
+
+      // ADN - close strictblocklist if open
+      const wlIdSb = getExtPageTabId("dashboard.html#strictblocklist.html");
+      wlIdSb && vAPI.tabs.replace(wlIdSb, vAPI.getURL("dashboard.html"));
     }
   };
 
   // Adn - StrictBlockList
   // toggle page strictBlock
-  exports.toggleStrictBlockButton = function (request, pageStore, tabId) { 
+  exports.toggleStrictBlockButton = function (request) { 
+    console.log("[ADN] toggleStrictBlock", request)
     const store = µb.pageStoreFromTabId(request.tabId);
     if (store) {
 
       µb.toggleStrictBlock(request.url, request.scope, request.state);
+      store.toggleNetFilteringSwitch(request.url, request.scope, true);
       // updateBadges();
 
       // close strictblocklist if open (see gh #113)
       const wlId = getExtPageTabId("dashboard.html#strictblocklist.html");
       wlId && vAPI.tabs.replace(wlId, vAPI.getURL("dashboard.html"));
+
+      // close whitelist if open (see gh #113)
+      const wlIdwl = getExtPageTabId("dashboard.html#whitelist.html");
+      wlIdwl && vAPI.tabs.replace(wlIdwl, vAPI.getURL("dashboard.html"));
     }
-
-
-    console.log("[ADN] toggleStrictBlock", request, pageStore, tabId)
   }
 
   // Called when new top-level page is loaded
