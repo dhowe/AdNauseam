@@ -606,16 +606,16 @@ const trimChar = function (s, chr) {
   return s;
 };
 
-const showAlert = function (msg) {
+const showVaultAlert = function (msg) {
 
   if (msg) {
 
-    $("#alert").removeClass('hide');
-    $("#alert p").text(msg);
+    $("#alert-vault").removeClass('hide');
+    $("#alert-vault p").text(msg);
 
   } else {
 
-    $("#alert").addClass('hide');
+    $("#alert-vault").addClass('hide');
   }
 };
 
@@ -834,7 +834,7 @@ function toogleVaultLoading(show) {
   if (show) {
     $container.css('opacity', '0');
     $('#loading-img').show();
-    showAlert(false)
+    showVaultAlert(false)
   } else {
     $container.css('opacity', '1');
     $('#loading-img').hide();

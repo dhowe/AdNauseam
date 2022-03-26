@@ -76,7 +76,7 @@
       }
     }
 
-    uDom("#alert").addClass('hide'); // reset state
+    uDom("#alert-noads").addClass('hide'); // reset state
     uDom('#main').toggleClass('disabled', getIsDisabled());
 
     // set button state
@@ -86,6 +86,7 @@
     } else if (getIsStrictBlocked()) {
       // strict blocked
       uDom('#strict').prop('checked', true);
+      toggleStrictAlert(page, true)
     } else {
       // active
       uDom('#active').prop('checked', true);
@@ -206,7 +207,7 @@
   }
 
   const doRecent = function () {
-    uDom("#alert").removeClass('hide');
+    uDom("#alert-noads").removeClass('hide');
     uDom('#ad-list-items').addClass('recent-ads');
   }
 
@@ -368,6 +369,15 @@
     return (!(arr && arr.length)) ? 0 : arr.filter(function (ad) {
       return ad.visitedTs > 0;
     }).length;
+  }
+
+  const toggleStrictAlert = function (pageUrl, state) {
+    console.log("toggleStrictAlert", pageUrl)
+    if (state) {
+      uDom("#alert-noads").removeClass('hide');
+    } else {
+      uDom("#alert-noads").addClass('hide');
+    }
   }
 
   const getPopupData = function (tabId) {
@@ -546,13 +556,14 @@
   };
 
   const onChangeState = function (evt) {
-    console.log("onChangeState", this.value)
     switch (this.value) {
       case 'strict':
         onClickStrict();
         break;
       case 'disable':
         toggleEnabled(evt, false)
+        // open dropdown menu
+        onClickDisableArrow()
         break;
       case 'active':
         toggleEnabled(evt, true)
@@ -562,14 +573,29 @@
     }
   }
 
-  const toggleEnabled = function (evt, state) {
+  const onChangeDisabledScope = function (evt) {
+    console.log("onChangeDisabledScope", evt)
+    var scope = uDom(".disable_type_radio:checked") ? uDom(".disable_type_radio:checked").val() : '' 
+    vAPI.messaging.send(
+      'adnauseam', {
+      what: 'toggleEnabled',
+      url: popupData.pageURL,
+      scope: scope,
+      state: false,
+      tabId: popupData.tabId
+    });
+    setTimeout(function () {
+      closePopup()
+    }, 500)
+  }
+
+  // keep in mind:
+  // state == false -> disabled 
+  // state == true -> active 
+  const toggleEnabled = function (evt, state, _scope) {
     if (!popupData || !popupData.pageURL || (popupData.pageHostname ===
       'behind-the-scene' && !popupData.advancedUserEnabled)) {
       return;
-    }
-    console.log("toggleEnabled", evt, state)
-    if (state == false) { // if click on disable
-
     }
     uDom('#main').toggleClass('disabled', !state)
     vAPI.messaging.send(
@@ -583,35 +609,33 @@
     updateMenuState()
   };
 
-  const onClickDisableArrow = function (evt) {
-    evt.preventDefault && evt.preventDefault();
-    evt.stopPropagation && evt.stopPropagation()
+  const onAnyClickAfterOpen = function (event) {
+    console.log("on any click after open", event)
+    if (event.target.name == 'disable_type') {
+      // here deal with choices of disable type
+    } else {
+      // here close the popup
+      closePopup()
+    }
+  }
+
+  const closePopup = function () {
+    uDom(".popup_arrow").removeClass("open")
+    uDom(".inner-popup_wrapper").addClass("hidden")
+    document.removeEventListener('click', onAnyClickAfterOpen)
+  }
+
+  const openPopup = function () {
+    uDom(".popup_arrow").addClass("open")
+    uDom(".inner-popup_wrapper").removeClass("hidden")
+    document.addEventListener('click', onAnyClickAfterOpen)
+  }
+
+  const onClickDisableArrow = function () {
+    // evt.preventDefault && evt.preventDefault();
+    // evt.stopPropagation && evt.stopPropagation()
     uDom("#disable").prop('checked',true);
-    var $this = uDom(this)
-    var isOpen = $this.hasClass('open')
-    console.log("onClickDisableArrow", isOpen, $this)
-
-    var onAnyClickAfterOpen = function (event) {
-      console.log("on any click after open", event)
-      if (event.target.name == 'disable_type') {
-        // here deal with choices of disable type
-      } else {
-        // here close the popup
-        closePopup()
-      }
-    }
-
-    var closePopup = function () {
-      $this.removeClass("open")
-      uDom(".inner-popup_wrapper").addClass("hidden")
-      document.removeEventListener('click', onAnyClickAfterOpen)
-    }
-
-    var openPopup = function () {
-      $this.addClass("open")
-      uDom(".inner-popup_wrapper").removeClass("hidden")
-      document.addEventListener('click', onAnyClickAfterOpen)
-    }
+    var isOpen = uDom(".popup_arrow").hasClass('open')
 
     if (isOpen) {
       closePopup()
@@ -681,6 +705,7 @@
 
     // add click events
     uDom('.adn_state_radio').on('change', onChangeState)
+    uDom('.disable_type_radio').on('change', onChangeDisabledScope)
     uDom('.popup_arrow').on('click', onClickDisableArrow)
     /*
     uDom('#pause-button').on('click', toggleEnabled);

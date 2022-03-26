@@ -208,13 +208,13 @@ div.tooltip {
 	display: none;
 }
 
-#alert {
+.alert {
 	height: 100%;
     width: 100%;
     position: relative;
 }
 
-#alert img {
+.alert img {
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -226,7 +226,7 @@ div.tooltip {
 	border-radius: 30px;
 }
 
-#alert p {
+.alert p {
 	position: absolute;
 	top: 50%;
 	margin-top: 50px;

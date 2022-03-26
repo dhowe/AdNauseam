@@ -189,7 +189,7 @@ button.danger:hover{
   color: #000;
 }
 
-#alert {
+.alert {
     width: 100%;
     position: relative;
 }
@@ -201,7 +201,7 @@ button.danger:hover{
 	margin: 125px 0px 20px 0px;
 }
 
-#alert img {
+.alert img {
   position: absolute;
   top: 50px;
   left: 50%;
@@ -213,7 +213,7 @@ button.danger:hover{
   border-radius: 30px;
 }
 
-#alert p {
+.alert p {
   position: absolute;
   top: 85px;
   margin-top: 5px;
@@ -764,6 +764,7 @@ footer > span  {
 }
 
 .popup_arrow {
+  pointer-events: none;
   position: absolute;
   z-index: 9999;
   right: 1px;

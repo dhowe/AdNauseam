@@ -1719,7 +1719,7 @@
       if (!done) $('#loading-img').show();
     }, 1000);
 
-    showAlert(visible ? false : 'no ads found');
+    showVaultAlert(visible ? false : 'no ads found');
 
     const loader = imagesLoaded($container, function () {
 
@@ -1778,7 +1778,7 @@
 
     if (!gAds || !gAds.length) {
       computeStats();
-      showAlert('no ads found');
+      showVaultAlert('no ads found');
       $('#loading-img').hide();
       return;
     }

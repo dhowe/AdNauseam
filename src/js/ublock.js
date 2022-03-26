@@ -129,9 +129,11 @@ const matchBucket = function(url, hostname, bucket, start) {
     if ( newState === undefined ) {
         newState = !currentState;
     }
+    /*
     if ( newState === currentState ) {
         return currentState;
     }
+    */
 
     const netWhitelist = this.netWhitelist;
     const pos = url.indexOf('#');

@@ -326,7 +326,7 @@ button.custom#buttonUpdateAdNauseam{
 button.important {
     padding: 1px 2em;
     }
-#alert {
+.alert {
     height: 200;
     width: 100%;
     position: relative;
@@ -340,7 +340,7 @@ button.important {
 	margin: 125px 30px 0px 0px;
 } */
 
-#alert img {
+.alert img {
   position: absolute;
   top: 50px;
   left: 50%;
@@ -352,7 +352,7 @@ button.important {
   border-radius: 30px;
 }
 
-#alert p {
+.alert p {
   position: absolute;
   top: 85px;
   margin-top: 5px;
