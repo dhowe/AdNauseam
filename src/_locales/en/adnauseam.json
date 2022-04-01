@@ -187,6 +187,10 @@
     "message": "No Ads collected on this page (showing recent)",
     "description": "shown in menu when only 'recent' Ads are shown"
   },
+  "adnThisPageStrictBlocked": {
+    "message": "{{domain}} is currently strict blocked.",
+    "description": "shown in menu when the current page is strict blocked"
+  },
   "adnExportedAdsFilename": {
     "message": "AdNauseam_Export_{{datetime}}.json",
     "description": "English: AdNauseam file export"
@@ -249,7 +253,27 @@
   },
   "adnMenuResume": {
     "message": "Resume",
-    "description": "appears in ADN popup menu"
+    "description": "appears in ADN popup menu three state button"
+  },
+  "adnMenuDisable": {
+    "message": "Disable",
+    "description": "Disabled Adnauseam -> appears in ADN popup menu three state button"
+  },
+  "adnMenuActive": {
+    "message": "Active",
+    "description": "Make Adnauseam Active -> appears in ADN popup menu three state button"
+  },
+  "adnMenuStrict": {
+    "message": "Strict",
+    "description": "Activate Strict Block -> appears in ADN popup menu three state button"
+  },
+  "adnMenuDisableScopeDomain": {
+    "message": "on domain.com",
+    "description": "Disable AdNaueam Block On this Domain -> Popup option that appears inside ADN menu"
+  },
+  "adnMenuDisableScopePage": {
+    "message": "on this page",
+    "description": "Disable AdNaueam Block On This Page -> Popup option that appears inside ADN menu"
   },
   "adnMenuSettings": {
     "message": "Settings",
@@ -437,6 +461,10 @@
   },
   "whitelistPageName": {
     "message": "Whitelists",
+    "description": "appears as tab name in dashboard"
+  },
+  "strictBlockListPageName": {
+    "message": "Strict Block List",
     "description": "appears as tab name in dashboard"
   },
   "eventLoggingPrompt": {

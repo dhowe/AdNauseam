@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="css/fonts/stylesheet.css">
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="css/fa-icons.css">
+
 </head>
 
 <body class="active">
@@ -53,7 +55,7 @@
 
         <div id="alert-strictblock" class="alert hide">
           <img src="img/alert.png" alt="alert">
-          <p data-i18n="adnShowingRecentAds"></p>
+          <p><span data-i18n="adnThisPageStrictBlocked" class="text"></span><span><a class="fa-icon info" href="https://github.com/dhowe/AdNauseam/wiki/Developer-FAQ#what-is-strict-blocking-and-when-should-i-use-it" target="_blank">question-circle</a></span></p>
         </div>
 
         <ul id='ad-list-items'></ul>
@@ -71,17 +73,17 @@
           <!-- Active -->
           <span class="btn_radio_wrapper btn_radio_wrapper-center">
             <input type="radio" class="btn_radio adn_state_radio" value="active" name="state_btn" id="active" checked="checked"/>
-            <label class="btn_radio_label label_active label_middle" for="active_radio" id="active-lbl">active</label>
+            <label class="btn_radio_label label_active label_middle" for="active_radio" id="active-lbl" data-i18n="adnMenuActive">&nbsp;</label>
           </span>
           <!-- Strict Block -->
           <span class="btn_radio_wrapper btn_radio_wrapper-left">
             <input type="radio" class="btn_radio adn_state_radio" value="strict" name="state_btn" id="strict"/>
-            <label class="btn_radio_label label_strict label_left" for="strict_radio" id="strict-lbl">strict</label>
+            <label class="btn_radio_label label_strict label_left" for="strict_radio" id="strict-lbl" data-i18n="adnMenuStrict">&nbsp;</label>
           </span>
           <!-- Disabled -->
           <span class="btn_radio_wrapper btn_radio_wrapper-right">
             <input type="radio" class="btn_radio adn_state_radio" value="disable" name="state_btn" id="disable"/>
-            <label class="btn_radio_label label_disable label_right" for="disable_radio" id="disable-lbl">disable
+            <label class="btn_radio_label label_disable label_right" for="disable_radio" id="disable-lbl" data-i18n="adnMenuDisable">&nbsp;
               <span class="popup_arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 7L6 4L10 7" stroke="#0076FF"/></svg></span>
             </label>
           </span>
@@ -93,19 +95,13 @@
         <div class="inner-popup_wrapper hidden">
           <div class="inner-popup" id="disable-popup">
             <ul>
-              <!--
-              <li class="btn_radio_wrapper">
-                <input type="radio" class="btn_radio disable_type_radio" value="everywhere" name="disable_type" id="everywhere"/>
-                <label class="btn_radio_label label_disable_type" for="disable_type" id="everywhere-lbl">everywhere</label>  
-              </li>
-              -->
               <li class="btn_radio_wrapper">
                 <input type="radio" class="btn_radio disable_type_radio" value="" name="disable_type" id="on_domain" checked/>
-                <label class="btn_radio_label label_disable_type" for="disable_type" id="on_domain-lbl">on domain.com</label>  
+                <label class="btn_radio_label label_disable_type" for="disable_type" id="on_domain-lbl" data-i18n="adnMenuDisableScopeDomain">&nbsp;</label>  
               </li>
               <li class="btn_radio_wrapper">
                 <input type="radio" class="btn_radio disable_type_radio" value="page" name="disable_type" id="on_this_page"/>
-                <label class="btn_radio_label label_disable_type" for="disable_type" id="on_this_page-lbl">on this page</label>  
+                <label class="btn_radio_label label_disable_type" for="disable_type" id="on_this_page-lbl" data-i18n="adnMenuDisableScopePage">&nbsp;</label>  
               </li>
             </ul>
           </div>
@@ -159,6 +155,7 @@
 
 
   </div>
+  <script src="js/fa-icons.js"></script>
   <script src="js/vapi.js"></script>
   <script src="js/vapi-common.js"></script>
   <script src="js/vapi-client.js"></script>

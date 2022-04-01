@@ -129,11 +129,9 @@ const matchBucket = function(url, hostname, bucket, start) {
     if ( newState === undefined ) {
         newState = !currentState;
     }
-    /*
     if ( newState === currentState ) {
         return currentState;
     }
-    */
 
     const netWhitelist = this.netWhitelist;
     const pos = url.indexOf('#');
@@ -141,10 +139,6 @@ const matchBucket = function(url, hostname, bucket, start) {
     const targetHostname = hostnameFromURI(targetURL);
     let key = targetHostname;
     let directive = scope === 'page' ? targetURL : targetHostname;
-
-    // if the button is "active" or "disable", remove page from strictBlock
-    // this.removePageFromStrictBlockList(this.netStrictBlockList, targetURL, targetHostname) 
-    // end ADN
 
     // Add to directive list
     if ( newState === false ) {

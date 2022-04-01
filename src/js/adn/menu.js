@@ -24,7 +24,7 @@
 (function () {
   'use strict';
 
-  let ads, page, settings; // remove? only if we can find an updated ad already in the DOM
+  let ads, page, settings, recent; // remove? only if we can find an updated ad already in the DOM
 
   const ad_list_height = 360;
 
@@ -66,6 +66,7 @@
   const renderPage = function (json) {
     page = json && json.pageUrl;
     settings = json && json.prefs;
+    recent = json && json.recent
 
     if (page) {
       // disable pause & resume buttons for options, vault, about/chrome
@@ -76,24 +77,10 @@
       }
     }
 
-    uDom("#alert-noads").addClass('hide'); // reset state
+    uDom("#alert-noads").addClass('hide'); // reset state of no ads showned
+    uDom("#alert-strictblock").addClass('hide'); // reset state of no ads showned
     uDom('#main').toggleClass('disabled', getIsDisabled());
 
-    // set button state
-    if (getIsDisabled()) {
-      // disabled 
-      uDom('#disable').prop('checked', true);
-    } else if (getIsStrictBlocked()) {
-      // strict blocked
-      uDom('#strict').prop('checked', true);
-      toggleStrictAlert(page, true)
-    } else {
-      // active
-      uDom('#active').prop('checked', true);
-    }
-    
-    
-    // disable 3 state toggle button
 
     if (typeof json !== 'undefined' && json !== null) {
       ads = json.data;
@@ -122,6 +109,20 @@
       }).then((data) => {
         renderNotifications(data.notifications)
         adjustBlockHeight(data.disableWarnings)
+
+        // set button state
+        if (getIsDisabled()) {
+          // disabled 
+          uDom('#disable').prop('checked', true);
+        } else if (getIsStrictBlocked()) {
+          // strict blocked
+          uDom('#strict').prop('checked', true);
+          toggleStrictAlert(page, true)
+        } else {
+          // active
+          uDom('#active').prop('checked', true);
+        }
+
       });
     });
   }
@@ -151,7 +152,7 @@
     const $items = uDom('#ad-list-items');
     $items.removeClass().empty();
 
-    let ads = json.data;
+    ads = json.data;
     if (ads) {
       if (json.recent) doRecent();
       for (let i = 0, j = ads.length; i < j; i++) {
@@ -372,11 +373,20 @@
   }
 
   const toggleStrictAlert = function (pageUrl, state) {
-    console.log("toggleStrictAlert", pageUrl)
+    console.log("toggleStrictAlert", pageUrl, state, ads)
+    let hostname = (new URL(pageUrl)).hostname;
+    uDom("#alert-strictblock .text").text(uDom("#alert-strictblock .text").text().replace("{{domain}}", hostname))
     if (state) {
-      uDom("#alert-noads").removeClass('hide');
-    } else {
+      uDom("#alert-strictblock").removeClass('hide');
       uDom("#alert-noads").addClass('hide');
+      uDom('#ad-list-items').addClass('recent-ads');
+    } else {
+      if (recent) {
+        uDom("#alert-noads").removeClass('hide');
+      } else {
+        uDom('#ad-list-items').removeClass('recent-ads');
+      }
+      uDom("#alert-strictblock").addClass('hide');
     }
   }
 
@@ -561,11 +571,13 @@
         onClickStrict();
         break;
       case 'disable':
+        toggleStrictAlert(popupData.pageURL, false)
         toggleEnabled(evt, false)
         // open dropdown menu
         onClickDisableArrow()
         break;
       case 'active':
+        toggleStrictAlert(popupData.pageURL, false)
         toggleEnabled(evt, true)
         break;
       default:
@@ -574,21 +586,31 @@
   }
 
   const onChangeDisabledScope = function (evt) {
-    console.log("onChangeDisabledScope", evt)
     var scope = uDom(".disable_type_radio:checked") ? uDom(".disable_type_radio:checked").val() : '' 
+    // first remove previous whichever previous scope from whitelist 
     vAPI.messaging.send(
       'adnauseam', {
       what: 'toggleEnabled',
       url: popupData.pageURL,
       scope: scope,
-      state: false,
+      state: true,
       tabId: popupData.tabId
+    }).then(() => {
+      // then re-add it with current scope
+      vAPI.messaging.send(
+        'adnauseam', {
+        what: 'toggleEnabled',
+        url: popupData.pageURL,
+        scope: scope,
+        state: false,
+        tabId: popupData.tabId
+      });
+      setTimeout(function () {
+        closePopup()
+      }, 500)
     });
-    setTimeout(function () {
-      closePopup()
-    }, 500)
   }
-
+  
   // keep in mind:
   // state == false -> disabled 
   // state == true -> active 
@@ -679,6 +701,8 @@
       'behind-the-scene' && !popupData.advancedUserEnabled)) {
       return;
     }
+    // enable alert
+    toggleStrictAlert(popupData.pageURL, true)
     uDom('#main').removeClass('disabled')
     vAPI.messaging.send(
       'adnauseam', {

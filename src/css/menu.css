@@ -1115,3 +1115,9 @@ select {
         margin-bottom: 0;
       }
   }
+  
+.fa-icon.info {
+  color: white;
+  fill: white;
+  opacity: 0.8;
+}
