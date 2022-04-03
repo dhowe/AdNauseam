@@ -373,7 +373,6 @@
   }
 
   const toggleStrictAlert = function (pageUrl, state) {
-    console.log("toggleStrictAlert", pageUrl, state, ads)
     let hostname = (new URL(pageUrl)).hostname;
     uDom("#alert-strictblock .text").text(uDom("#alert-strictblock .text").text().replace("{{domain}}", hostname))
     if (state) {
@@ -432,7 +431,6 @@
   };
 
   const cachePopupData = function (data) {
-    console.log("cachePopupData", data)
     popupData = {};
     scopeToSrcHostnameMap['.'] = '';
     hostnameToSortableTokenMap = {};
@@ -610,7 +608,7 @@
       }, 500)
     });
   }
-  
+
   // keep in mind:
   // state == false -> disabled 
   // state == true -> active 
@@ -632,7 +630,6 @@
   };
 
   const onAnyClickAfterOpen = function (event) {
-    console.log("on any click after open", event)
     if (event.target.name == 'disable_type') {
       // here deal with choices of disable type
     } else {

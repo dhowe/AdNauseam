@@ -173,11 +173,13 @@
         <li><input id="no-scripting" type="checkbox" data-setting-name="noScripting" data-setting-type="bool"><label
             data-i18n="settingsNoScriptingPrompt" for="no-scripting"></label> <a class="fa-icon info"
             href="https://github.com/gorhill/uBlock/wiki/Per-site-switches#no-scripting" target="_blank">info-circle</a>
+            <!-- Disabled Global Strict Blocking Option https://github.com/dhowe/AdNauseam/issues/2036
         <li><input id="strict-blocking" type="checkbox" data-setting-name="strictBlockingMode"
             data-setting-type="bool"><label data-i18n="settingsStrictBlockingMode" for="strict-blocking"></label> <a
             class="fa-icon info important"
             href="https://github.com/dhowe/AdNauseam/wiki/Developer-FAQ#what-is-strict-blocking-and-when-should-i-use-it"
             target="_blank">info-circle</a></li>
+            -->
       </ul>
     </li>
 
@@ -216,12 +218,6 @@
       <input id="importFilePicker" type="file" accept="application/json" class="hiddenFileInput">
       <button class="custom pull-right" type="button" id="resetOptions" data-i18n="aboutResetDataButton"></button>
     </p>
-  </div>
-
-  <div class="state_btn-wrapper">
-    <input type="radio" value="" name="state_btn" id="strict"><label for="strict_radio" id="strict-lbl">si</label>
-    <input type="radio" value="" name="state_btn" id="active" checked="checked"><label for="active_radio" id="active-lbl">?</label>
-    <input type="radio" value="" name="state_btn" id="disabled"><label for="disabled_radio" id="disabled-lbl">no</label>
   </div>
 
   <div id="export-dialog" class="hide">

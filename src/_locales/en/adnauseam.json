@@ -191,6 +191,10 @@
     "message": "{{domain}} is currently strict blocked.",
     "description": "shown in menu when the current page is strict blocked"
   },
+  "adnStrictBlockListDescription": {
+    "message": "The strict block list serves to help the users to strict block specific domains or pages more easily.",
+    "description": "Description on the strict block list tab, which is found on the dashboard"
+  },
   "adnExportedAdsFilename": {
     "message": "AdNauseam_Export_{{datetime}}.json",
     "description": "English: AdNauseam file export"
