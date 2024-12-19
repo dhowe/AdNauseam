@@ -67,13 +67,13 @@ export function safeSelf() {
         makeLogPrefix(...args) {
             return this.sendToLogger && `[${args.join(' \u205D ')}]` || '';
         },
-        uboLog(...args) {
+        adnlog(...args) {
             if ( this.sendToLogger === undefined ) { return; }
             if ( args === undefined || args[0] === '' ) { return; }
             return this.sendToLogger('info', ...args);
             
         },
-        uboErr(...args) {
+        adnErr(...args) {
             if ( this.sendToLogger === undefined ) { return; }
             if ( args === undefined || args[0] === '' ) { return; }
             return this.sendToLogger('error', ...args);

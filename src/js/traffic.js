@@ -384,6 +384,7 @@ const onBeforeRootFrameRequest = function (fctxt) {
     if ( trusted === false && pageStore !== null ) {
         if ( result !== 1 ) {
             pageStore.redirectNonBlockedRequest(fctxt);
+            // adn Q: fctxt is often undefined here, but we've already referenced its type and tabId ??
             logRedirect(fctxt, 'beforeRequest.non-blocked'); // ADN: redirect unblocked
         } else {
             pageStore.skipMainDocument(fctxt, true);

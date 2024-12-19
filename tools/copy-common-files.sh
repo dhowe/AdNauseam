@@ -5,6 +5,8 @@
 DES=$1
 UBLOCK=$( cat dist/version ) # ADN:ublock-version
 
+bash ./tools/pull-assets.sh # ADN
+
 bash ./tools/make-assets.sh        $DES
 bash ./tools/make-locales.sh       $DES
 

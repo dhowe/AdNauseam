@@ -60,7 +60,7 @@ export function setAttrFn(
                 if ( attr.toLowerCase() in elem ) { continue; }
             }
             elem.setAttribute(attr, after);
-            safe.uboLog(logPrefix, `${attr}="${after}"`);
+            safe.adnlog(logPrefix, `${attr}="${after}"`);
         }
         return true;
     };

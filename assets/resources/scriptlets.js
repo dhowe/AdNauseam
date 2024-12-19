@@ -325,7 +325,7 @@ function abortCurrentScriptCore(
             }
         });
     } catch(ex) {
-        safe.uboErr(logPrefix, `Error: ${ex}`);
+        safe.adnErr(logPrefix, `Error: ${ex}`);
     }
 }
 
@@ -493,7 +493,7 @@ function setConstantFn(
                 });
                 safe.adnlog(logPrefix, 'Trap installed');
             } catch(ex) {
-                safe.uboErr(logPrefix, ex);
+                safe.adnErr(logPrefix, ex);
             }
         };
         const trapChain = function(owner, chain) {
@@ -1163,7 +1163,7 @@ function jsonPruneFetchResponseFn(
                 try {
                     objs[0] = safe.Request_clone.call(objs[0]);
                 } catch(ex) {
-                    safe.uboErr(logPrefix, 'Error:', ex);
+                    safe.adnErr(logPrefix, 'Error:', ex);
                 }
             }
             if ( args[1] instanceof Object ) {
@@ -1207,11 +1207,11 @@ function jsonPruneFetchResponseFn(
                 });
                 return responseAfter;
             }).catch(reason => {
-                safe.uboErr(logPrefix, 'Error:', reason);
+                safe.adnErr(logPrefix, 'Error:', reason);
                 return responseBefore;
             });
         }).catch(reason => {
-            safe.uboErr(logPrefix, 'Error:', reason);
+            safe.adnErr(logPrefix, 'Error:', reason);
             return fetchPromise;
         });
     };
@@ -1257,7 +1257,7 @@ function replaceFetchResponseFn(
                         objs[0] = safe.Request_clone.call(objs[0]);
                     }
                     catch(ex) {
-                        safe.uboErr(logPrefix, ex);
+                        safe.adnErr(logPrefix, ex);
                     }
                 }
                 if ( args[1] instanceof Object ) {
@@ -1294,11 +1294,11 @@ function replaceFetchResponseFn(
                     });
                     return responseAfter;
                 }).catch(reason => {
-                    safe.uboErr(logPrefix, reason);
+                    safe.adnErr(logPrefix, reason);
                     return responseBefore;
                 });
             }).catch(reason => {
-                safe.uboErr(logPrefix, reason);
+                safe.adnErr(logPrefix, reason);
                 return fetchPromise;
             });
         }
@@ -2327,7 +2327,7 @@ function preventRefresh(
     const logPrefix = safe.makeLogPrefix('prevent-refresh', delay);
     const stop = content => {
         window.stop();
-        safe.uboLog(logPrefix, `Prevented "${content}"`);
+        safe.adnlog(logPrefix, `Prevented "${content}"`);
     };
     const defuse = ( ) => {
         const meta = document.querySelector('meta[http-equiv="refresh" i][content]');
@@ -3224,7 +3224,7 @@ function xmlPrune(
                 safe.adnlog(logPrefix, `${item.constructor.name}.${item.nodeName} removed`);
             }
         } catch(ex) {
-            safe.uboErr(logPrefix, `Error: ${ex}`);
+            safe.adnErr(logPrefix, `Error: ${ex}`);
         }
         return xmlDoc;
     };
