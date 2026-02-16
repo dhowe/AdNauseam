@@ -585,7 +585,6 @@ class ProceduralFilterer {
             const nodes = pselector.exec();
             /* ADN parse procedural selector hits */
             if ( nodes.length > 0) {
-                console.log("[ADN] parse procedural selector hits", nodes)
                 for ( const node of nodes ) {
                     vAPI.adCheck && vAPI.adCheck(node);
                 }

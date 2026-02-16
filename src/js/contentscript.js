@@ -468,7 +468,7 @@ vAPI.SafeAnimationFrame = class {
 
 // ADN: Dynamic hiding style based on showAdsDebug setting
 const hidingStyleDebug = 'opacity:0.5!important;border:1px solid red!important;'; // ADN
-const hidingStyleNormal = 'display:none!important;'; // ADN
+const hidingStyleNormal = 'display: none!important;'; // ADN
 vAPI.hideStyle = hidingStyleNormal; // ADN - default, will be updated when showAdsDebug is fetched
 vAPI.notHideStyle = '/*display:none!important;*/'; // ADN
 vAPI.showAdsDebug = false; // ADN
@@ -1129,7 +1129,7 @@ vAPI.DOMFilterer = class {
                 if (typeof injected === 'string') {
 									selectors = injected.split(`\n{${vAPI.hideStyle}}`)[0] // ADN
                 } else {
-                    selectors = injected.join(",")
+                  selectors = injected.join(",")
                 }
                 allSelectors += (allSelectors == "" ? "" : ",") + selectors;
               }
@@ -1138,7 +1138,6 @@ vAPI.DOMFilterer = class {
             let nodes;
             if (allSelectors != "") {
               nodes = document.querySelectorAll(allSelectors);
-              // console.log("[ADN] processing selectors: " + allSelectors);    
               for ( const node of nodes ) {
                   vAPI.adCheck && vAPI.adCheck(node);
               }
