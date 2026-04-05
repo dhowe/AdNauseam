@@ -52,7 +52,15 @@ const AcceptHeaders = {
     chrome: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     firefox: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 };
-const CommonUserAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.85 Safari/537.36';
+// Operation GHOST-PROTOCOL: Windows Edge Stable UA Spoof (April 2026)
+const CommonUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.3856.97';
+
+// Client Hints for modern sites (YouTube, Google)
+const EdgeStableClientHints = {
+    'Sec-CH-UA': '"Not_A Brand";v="8", "Chromium";v="146", "Microsoft Edge";v="146"',
+    'Sec-CH-UA-Mobile': '?0',
+    'Sec-CH-UA-Platform': '"Windows"'
+};
 
 let exports = {};
 
@@ -62,6 +70,21 @@ let exports = {};
 const onBeforeSendHeaders = function (details) {
 
     const headers = details.requestHeaders, prefs = µb.userSettings, adn = adnauseam;
+
+    // Operation GHOST-PROTOCOL: Inject Client Hints for all requests
+    for (const [name, value] of Object.entries(EdgeStableClientHints)) {
+        let exists = false;
+        for (let i = 0; i < headers.length; i++) {
+            if (headers[i].name.toLowerCase() === name.toLowerCase()) {
+                headers[i].value = value;
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            addHeader(headers, name, value);
+        }
+    }
 
     // if clicking/hiding is enabled with DNT, then send the DNT header
     const respectDNT = ((prefs.clickingAds && prefs.disableClickingForDNT) ||

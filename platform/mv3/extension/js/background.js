@@ -82,6 +82,7 @@ import {
     getEffectiveDynamicRules,
     getEffectiveSessionRules,
     getEffectiveUserRules,
+    getEnabledRulesetsDetails,
     getRulesetDetails,
     patchDefaultRulesets,
     setStrictBlockMode,
@@ -422,6 +423,12 @@ function onMessage(request, sender, callback) {
     case 'getRulesetDetails':
         getRulesetDetails().then(rulesetDetails => {
             callback(Array.from(rulesetDetails.values()));
+        });
+        return true;
+
+    case 'getEnabledRulesetsDetails':
+        getEnabledRulesetsDetails().then(rulesetDetails => {
+            callback(rulesetDetails);
         });
         return true;
 

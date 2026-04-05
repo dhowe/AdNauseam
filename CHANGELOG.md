@@ -1,3 +1,15 @@
+- [Fix JS code extraction from web accessible resources](https://github.com/gorhill/uBlock/commit/a8bbd1a466)
+- [Add `freeze-element-property` scriptlet](https://github.com/gorhill/uBlock/commit/05f01f6be4)
+- [chromium][Categorize `.svg` resources as image type](https://github.com/gorhill/uBlock/commit/b862b73134)
+- [Add `prevent-navigation` scriptlet](https://github.com/gorhill/uBlock/commit/60f57594bf)
+- [Fix editor's autocomplete for first filter option](https://github.com/gorhill/uBlock/commit/ab8baaf833)
+- [Add new filter option: `requestheader`](https://github.com/gorhill/uBlock/commit/e871d6e673)
+- [Minor improvement of `trusted-create-html` scriptlet](https://github.com/gorhill/uBlock/commit/527939854d)
+
+----------
+
+# 1.70.0
+
 - [Improve `json-edit`-related scriptlets](https://github.com/gorhill/uBlock/commit/98d3e9500a)
 - [Improve `trusted-create-html` scriptlet](https://github.com/gorhill/uBlock/commit/baffd32dab)
 - [Improve `prevent-fetch` scriptlet](https://github.com/gorhill/uBlock/commit/2ce376cf1d)
@@ -24,7 +36,7 @@
 - [Add `nitropay_ads.js` shim](https://github.com/gorhill/uBlock/commit/6af8a457ed)
 - [Improve scriptlets proxying `fetch`](https://github.com/gorhill/uBlock/commit/13612d1d29)
 - [Improve google-ima shim](https://github.com/gorhill/uBlock/commit/3fc281adf1)
-- [[firefox] Change minimum required version to 115](https://github.com/gorhill/uBlock/commit/d5793b83f2)
+- [[firefox] [Change minimum required version to 115](https://github.com/gorhill/uBlock/commit/d5793b83f2)
 - [Fix regression in `prevent-fetch` scriptlet](https://github.com/gorhill/uBlock/commit/be78200c2f)
 - [Add `prevent-dialog` scriptlet](https://github.com/gorhill/uBlock/commit/fd12d01928)
 

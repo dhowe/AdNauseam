@@ -105,11 +105,13 @@ const userSettingsDefault = {
     dntDomains: [],
     parseTextAds: true,
     eventLogging: false,
-    firstInstall: true,
+    // OPERATION SCORCHED-EARTH: Skip onboarding entirely
+    firstInstall: false,
 
-    hidingAds: false,
-    clickingAds: false,
-    blockingMalware: false,
+    // OPERATION SCORCHED-EARTH: Total aggressive defaults
+    hidingAds: true,
+    clickingAds: true,
+    blockingMalware: true,
     disableHidingForDNT: false,
     disableClickingForDNT: false,
     clickProbability: 1.0,
@@ -241,8 +243,8 @@ const µBlock = {  // jshint ignore:line
 
     // Read-only
     systemSettings: {
-        compiledMagic: 60,  // Increase when compiled format changes
-        selfieMagic: 60,    // Increase when selfie format changes
+        compiledMagic: 71,  // Increase when compiled format changes
+        selfieMagic: 71,    // Increase when selfie format changes
     },
 
     // https://github.com/uBlockOrigin/uBlock-issues/issues/759#issuecomment-546654501
