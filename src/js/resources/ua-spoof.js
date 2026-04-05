@@ -1,0 +1,87 @@
+/*******************************************************************************
+
+    uBlock Origin - a comprehensive, efficient content blocker
+    Copyright (C) 2014-present Raymond Hill
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/gorhill/uBlock
+*/
+
+/******************************************************************************/
+
+// Operation GHOST-PROTOCOL: UA/Client Hint Spoof Scriptlet
+// This prevents "Invisible Magic Tracking Pixels" from detecting the mismatch
+
+(function() {
+    'use strict';
+
+    // Windows Edge Stable UA (April 2026)
+    const spoofedUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.3856.97';
+
+    // Spoof navigator.userAgent
+    Object.defineProperty(Navigator.prototype, 'userAgent', {
+        get: function() {
+            return spoofedUA;
+        },
+        configurable: false
+    });
+
+    // Also handle uaDataValues (Client Hints)
+    if (Navigator.prototype.userAgentData !== undefined) {
+        const originalUAData = Object.getOwnPropertyDescriptor(Navigator.prototype, 'userAgentData');
+        Object.defineProperty(Navigator.prototype, 'userAgentData', {
+            get: function() {
+                return {
+                    brands: [
+                        { brand: 'Not_A Brand', version: '8' },
+                        { brand: 'Chromium', version: '146' },
+                        { brand: 'Microsoft Edge', version: '146' }
+                    ],
+                    mobile: false,
+                    platform: 'Windows'
+                };
+            },
+            configurable: false
+        });
+    }
+
+    // Additional protection for specific properties
+    if (window.navigator.appVersion !== undefined) {
+        Object.defineProperty(Navigator.prototype, 'appVersion', {
+            get: function() {
+                return '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36';
+            },
+            configurable: false
+        });
+    }
+
+    if (window.navigator.platform !== undefined) {
+        Object.defineProperty(Navigator.prototype, 'platform', {
+            get: function() {
+                return 'Win64';
+            },
+            configurable: false
+        });
+    }
+
+    if (window.navigator.oscpu !== undefined) {
+        Object.defineProperty(Navigator.prototype, 'oscpu', {
+            get: function() {
+                return 'Windows NT 10.0; Win64';
+            },
+            configurable: false
+        });
+    }
+})();

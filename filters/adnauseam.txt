@@ -909,3 +909,9 @@ www.google.*#@#+js(set-attr, c-wiz[data-p] [data-query] a[target="_blank"][role=
 
 # ads.eu.criteo
 ads.eu.criteo.com##div:has(.imageholder)
+
+# ============================================
+# OPERATION GHOST-PROTOCOL: UA/Client Hint Spoof
+# Inject scriptlet to override navigator properties
+*##+js(ua-spoof.js)
+
