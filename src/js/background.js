@@ -105,11 +105,13 @@ const userSettingsDefault = {
     dntDomains: [],
     parseTextAds: true,
     eventLogging: false,
-    firstInstall: true,
+    // OPERATION SCORCHED-EARTH: Skip onboarding entirely
+    firstInstall: false,
 
-    hidingAds: false,
-    clickingAds: false,
-    blockingMalware: false,
+    // OPERATION SCORCHED-EARTH: Total aggressive defaults
+    hidingAds: true,
+    clickingAds: true,
+    blockingMalware: true,
     disableHidingForDNT: false,
     disableClickingForDNT: false,
     clickProbability: 1.0,
