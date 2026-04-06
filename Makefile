@@ -60,6 +60,14 @@ mobile: FORCE
 	cp -r platform/mobile/* dist/build/adnauseam.mobile/
 	# Inject the mobile flag directly into the build
 	echo "window.ADNAUSEAM_MOBILE = true;" > dist/build/adnauseam.mobile/js/mobile-flag.js
+	cp platform/mobile/manifest.json dist/build/adnauseam.mobile/manifest.json
+	# Set mobile flag for UA spoofing
+	@if command -v terser >/dev/null 2>&1; then \
+		find dist/build/adnauseam.mobile/js -name '*.js' -exec terser --compress --mangle {} -o {} \; \
+		|| echo "Minification skipped"; \
+	else \
+		echo "Minification skipped (terser not found)"; \
+	fi
 	@echo "Mobile build complete at dist/build/adnauseam.mobile"
 
 # Always force rebuild
