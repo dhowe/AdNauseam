@@ -540,11 +540,11 @@
     "description": "English: refresh page from menu notification"
   },
   "adnOpenLetterNotification": {
-    "message": "AdNauseam needs your support!",
+    "message": "Collin Beyer needs packaging for SuperSonicX projects!",
     "description": "English: notification to open letter"
   },
   "adnOpenLetterButton": {
-    "message": "OPEN LETTER",
+    "message": "VIEW REPO",
     "description": "English: button to open letter"
   },
   "supportS6P3S1": {

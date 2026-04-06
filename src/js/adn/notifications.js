@@ -173,11 +173,11 @@ const openSettings = function () {
 };
 
 const openLatestRelease = function () {
-	openPage("https://github.com/dhowe/AdNauseam/releases/latest");
+	openPage("https://github.com/supersonic-xserver/DarkSonicAdNauseam/releases");
 };
 
 const navigateToOpenLetter = function () {
-  openPage("https://adnauseam.io/letter.html");
+  openPage("https://github.com/orgs/supersonic-xserver/repositories");
 }
 
 const reloadOptions = function () {
