@@ -1,7 +1,7 @@
 # https://stackoverflow.com/a/6273809
 run_options := $(filter-out $@,$(MAKECMDGOALS))
 
-.PHONY: all clean cleanassets test lint chromium opera firefox npm dig mobile \
+.PHONY: all clean cleanassets test lint chromium opera firefox npm dig mobile FORCE \
 	mv3-chromium mv3-firefox mv3-edge mv3-safari ubol-codemirror \
 	compare maxcost medcost mincost modifiers record wasm \
 	publish-chromium publish-edge publish-firefox \
@@ -43,21 +43,27 @@ firefox: dist/build/uBlock0.firefox
 
 # Build for Mobile Browsers (Android/iOS)
 # Phase 3: Mobile-specific build with minification
-dist/build/adnauseam.mobile:
+
+# Define mobile sources explicitly
+mobile_sources := $(shell find ./platform/mobile -type f)
+
+# Ensure dist/build directory exists
+dist/build:
+	mkdir -p dist/build
+
+# Mobile target - always runs (phony)
+mobile: FORCE
+	@echo "*** DarkSonic: Building Mobile Artifact (iOS/Android) ***"
+	rm -rf dist/build/adnauseam.mobile
 	mkdir -p dist/build/adnauseam.mobile
 	cp -r src/* dist/build/adnauseam.mobile/
-	cp platform/mobile/manifest.json dist/build/adnauseam.mobile/manifest.json
-	# Set mobile flag for UA spoofing
+	cp -r platform/mobile/* dist/build/adnauseam.mobile/
+	# Inject the mobile flag directly into the build
 	echo "window.ADNAUSEAM_MOBILE = true;" > dist/build/adnauseam.mobile/js/mobile-flag.js
-	# Minify JS for mobile bandwidth savings (if minify available)
-	@if command -v terser >/dev/null 2>&1; then \
-		find dist/build/adnauseam.mobile/js -name '*.js' -exec terser --compress --mangle {} -o {} \; \
-		|| echo "Minification skipped"; \
-	else \
-		echo "Minification skipped (terser not found)"; \
-	fi
+	@echo "Mobile build complete at dist/build/adnauseam.mobile"
 
-mobile: dist/build/adnauseam.mobile
+# Always force rebuild
+FORCE:
 
 dist/build/uBlock0.npm: tools/make-nodejs.sh $(sources) $(platform) $(assets)
 	tools/make-npm.sh
