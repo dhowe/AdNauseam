@@ -1,0 +1,113 @@
+{
+  "version": "1.41.0",
+  "author": "Daniel C. Howe",
+  "background": {
+    "page": "background.html"
+  },
+  "browser_action": {
+    "default_icon": {
+      "16": "img/icon_16.png",
+      "32": "img/icon_32.png",
+      "64": "img/icon_64.png"
+    },
+    "default_title": "AdNauseam",
+    "default_popup": "popup-fenix.html"
+  },
+  "commands": {
+    "launch-element-zapper": {
+      "description": "__MSG_popupTipZapper__"
+    },
+    "launch-element-picker": {
+      "description": "__MSG_popupTipPicker__"
+    },
+    "launch-logger": {
+      "description": "__MSG_popupTipLog__"
+    },
+    "open-dashboard": {
+      "description": "__MSG_popupTipDashboard__"
+    },
+    "relax-blocking-mode": {
+      "description": "__MSG_relaxBlockingMode__"
+    },
+    "toggle-cosmetic-filtering": {
+      "description": "__MSG_toggleCosmeticFiltering__"
+    },
+    "toggle-javascript": {
+      "description": "__MSG_toggleJavascript__"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "/js/vapi.js",
+        "/js/vapi-client.js",
+        "/js/contentscript.js"
+      ],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://easylist.to/*",
+        "https://*.fanboy.co.nz/*",
+        "https://filterlists.com/*",
+        "https://forums.lanik.us/*",
+        "https://github.com/*",
+        "https://*.github.io/*"
+      ],
+      "js": [
+        "/js/scriptlets/subscriber.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://github.com/uBlockOrigin/*",
+        "https://ublockorigin.github.io/*",
+        "https://*.reddit.com/r/uBlockOrigin/*"
+      ],
+      "js": [
+        "/js/scriptlets/updater.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "content_security_policy": "script-src 'self'; object-src 'self'",
+  "default_locale": "en",
+  "description": "__MSG_extShortDesc__",
+  "icons": {
+    "16": "img/icon_16.png",
+    "32": "img/icon_32.png",
+    "64": "img/icon_64.png",
+    "128": "img/icon_128.png"
+  },
+  "incognito": "spanning",
+  "manifest_version": 2,
+  "minimum_chrome_version": "93.0",
+  "name": "AdNauseam",
+  "permissions": [
+    "alarms",
+    "contextMenus",
+    "storage",
+    "tabs",
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking",
+    "<all_urls>"
+  ],
+  "short_name": "AdNauseam",
+  "storage": {
+    "managed_schema": "managed_storage.json"
+  },
+  "key": "mbfbgdonmnbmjjhhfoinempobihojlao",
+  "web_accessible_resources": [
+    "/web_accessible_resources/*"
+  ]
+}
