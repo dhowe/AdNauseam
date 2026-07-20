@@ -5,3 +5,8 @@
 /tmp/
 /artifacts
 /submodules
+*.DS_Store
+benchmarking/
+node_modules/
+platform/
+publish-extension/
