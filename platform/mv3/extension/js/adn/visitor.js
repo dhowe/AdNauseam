@@ -12,12 +12,20 @@
 
 import { adnauseam } from './core.js';
 import { log, warn, err } from './log.js';
+import { visitAdUrl } from './visit-request.js';
+import { browser, webextFlavor } from '../ext.js';
 
 /******************************************************************************/
 
 const pollQueueInterval = 5000;   // 5 seconds between queue checks
 const maxAttemptsPerAd = 3;
 const minVisitInterval = 2000;    // minimum 2s between visits (avoid bursts)
+// ADN: name of the Safari-only alarm used to resurrect the visit queue when
+// Safari unloads the idle background page. 'deferredJobs' (alarms.js) is a
+// different, unrelated alarm with a 5-minute-minimum granularity, too coarse
+// for visiting ads promptly.
+const visitAlarmName = 'adn-visit-queue';
+const useVisitAlarm = webextFlavor === 'safari' && browser.alarms !== undefined;
 
 let lastVisitTs = 0;
 let visiting = false;
@@ -85,9 +93,14 @@ async function visitAd(ad) {
   try {
     await adnauseam.ready();
 
-    const ok = await ensureOffscreen();
+    // ADN: Safari has no chrome.offscreen API, but its MV3 background is a
+    // non-persistent *page* with a DOM, so visits run inline there. Every
+    // other platform keeps the pre-existing offscreen-document path,
+    // untouched.
+    const useOffscreen = webextFlavor !== 'safari';
+    const ok = useOffscreen ? await ensureOffscreen() : true;
     if (!ok) {
-      warn('[ADN Visitor] No offscreen document, skipping visit');
+      warn('[ADN Visitor] No visit-capable context, skipping visit');
       visiting = false;
       return;
     }
@@ -101,19 +114,31 @@ async function visitAd(ad) {
     // Broadcast attempt to open UIs
     adnauseam.broadcastMessage({ what: 'adAttempt', ad });
 
-    // Send visit request to offscreen document
-    const response = await chrome.runtime.sendMessage({
-      what: 'visitAd',
-      ad: {
-        targetUrl: ad.targetUrl,
-        parsedTargetUrl: ad.parsedTargetUrl || null,
-        pageUrl: ad.pageUrl,
-        id: ad.id
-      }
-    }).catch(e => {
-      warn('[ADN Visitor] Message failed:', e);
-      return { success: false, error: e.message };
-    });
+    const adPayload = {
+      targetUrl: ad.targetUrl,
+      parsedTargetUrl: ad.parsedTargetUrl || null,
+      pageUrl: ad.pageUrl,
+      id: ad.id
+    };
+
+    let response;
+    if (useOffscreen) {
+      // Send visit request to offscreen document
+      response = await chrome.runtime.sendMessage({
+        what: 'visitAd',
+        ad: adPayload
+      }).catch(e => {
+        warn('[ADN Visitor] Message failed:', e);
+        return { success: false, error: e.message };
+      });
+    } else {
+      // Safari background page: visit inline. Must be a direct call —
+      // runtime.sendMessage is not delivered to listeners in the same page.
+      response = await visitAdUrl(adPayload).catch(e => {
+        warn('[ADN Visitor] Inline visit failed:', e);
+        return { success: false, error: e.message };
+      });
+    }
 
     if (response && response.success) {
       // Success
@@ -185,17 +210,35 @@ async function pollQueue() {
 /******************************************************************************/
 // Start/stop
 
+// ADN: Safari's non-persistent background page is short-lived and
+// setInterval dies with it. This alarm wakes the background back up so the
+// queue survives idle teardowns; the setInterval above drives visits while
+// the context stays alive. Safari-only, so no other platform gains a
+// recurring wakeup it didn't have before.
+if (useVisitAlarm) {
+  browser.alarms.onAlarm.addListener(alarm => {
+    if (alarm.name === visitAlarmName) { pollQueue(); }
+  });
+}
+
 function startVisitQueue() {
   if (pollTimerId) return;
 
   log('[ADN Visitor] Starting visit queue');
   pollTimerId = setInterval(pollQueue, pollQueueInterval);
 
+  if (useVisitAlarm) {
+    browser.alarms.create(visitAlarmName, { periodInMinutes: 1 });
+  }
+
   // Run first poll soon
   setTimeout(pollQueue, 1000);
 }
 
 function stopVisitQueue() {
+  if (useVisitAlarm) {
+    browser.alarms.clear(visitAlarmName);
+  }
   if (pollTimerId) {
     clearInterval(pollTimerId);
     pollTimerId = null;
