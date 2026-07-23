@@ -234,6 +234,12 @@
       return null;
     }
 
+    // Last-resort guard: never register ad-network info links as targets
+    if (isAdInfoLink(data.targetUrl)) {
+      logP('  Skipping ad-network info link:', data.targetUrl);
+      return null;
+    }
+
     // Skip internal/relative google tracking links (e.g. /aclk?...)
     if (data.targetUrl.startsWith('/aclk') || data.targetUrl.startsWith('/url?')) {
       logP('  Skipping internal tracking link:', data.targetUrl);
@@ -417,13 +423,25 @@
     return false;
   }
 
+  // Ad-network info/opt-out pages (e.g. AdChoices, Google's "Why this ad?")
+  // and network utility/branding links (e.g. Taboola's "advertise with us"
+  // footer) — never the actual advertiser, and the info pages typically 403
+  // when visited out of context.
+  const adInfoLinkRe = /adssettings\.google\.|whythisad|(^|[./])adchoices([./?#]|$)|aboutads\.info|youradchoices|google\.com\/settings\/ads|popup\.(taboola|tblcontent)\.com|(taboola|tblcontent)\.com\/(en\/)?\?|outbrain\.com\/what-is|\.outbrain\.com\/?$/i;
+
+  function isAdInfoLink(href) {
+    return href ? adInfoLinkRe.test(href) : false;
+  }
+
   // Find clickable parent
   function findClickableParent(node) {
     let checkNode = node;
     let depth = 0;
     while (checkNode && checkNode.nodeType === 1 && depth < 10) {
       if (checkNode.tagName === 'A' || checkNode.hasAttribute('href')) {
-        return checkNode;
+        if (!isAdInfoLink(checkNode.getAttribute('href'))) {
+          return checkNode;
+        }
       }
       // Only consider onclick if it contains a valid URL
       if (checkNode.hasAttribute('onclick') && onclickHasUrl(checkNode.getAttribute('onclick'))) {
@@ -439,6 +457,17 @@
   function findClickableChild(node) {
     if (!node) return null;
 
+    // Prefer the anchor that wraps the thumbnail image: in native cards
+    // (Taboola/Outbrain) that's the advertiser click-through, whereas other
+    // anchors in the card are branding/"Sponsored by" utility links.
+    for (const link of node.querySelectorAll('a[href^="http"]')) {
+      const href = link.getAttribute('href');
+      if (href && !isAdInfoLink(href) && link.querySelector('img, picture, [style*="background"]')) {
+        logP('  Found clickable child (image-wrapping):', link);
+        return link;
+      }
+    }
+
     // Prefer links with specific ad-link classes (Google PLA, etc.)
     const adLinkSelectors = [
       'a.clickable-card',
@@ -449,11 +478,11 @@
     ];
 
     for (const sel of adLinkSelectors) {
-      const link = node.querySelector(sel);
-      if (link) {
+      for (const link of node.querySelectorAll(sel)) {
         const href = link.getAttribute('href');
-        // Skip internal tracking redirects — we want the actual destination
-        if (href && href.startsWith('http')) {
+        // Skip internal tracking redirects and ad-network info links —
+        // we want the actual advertiser destination
+        if (href && href.startsWith('http') && !isAdInfoLink(href)) {
           logP('  Found clickable child via:', sel, link);
           return link;
         }
@@ -541,6 +570,62 @@
     element.setAttribute('process-adn', Date.now().toString());
   }
 
+  // Extract ad data from an element already known/suspected to be an ad
+  // container, and report it. Throttled via canProcess/markProcessed so
+  // rotating ad slots are re-examined without permanently marking elements
+  // as done. Shared by the top-frame selector scan (processElements) and
+  // the sub-frame image sweep (scanFrameImages) below.
+  function reportElement(element) {
+    if (!canProcess(element)) return;
+    markProcessed(element);
+
+    const adData = extractAdData(element);
+    if (!adData || !adData.targetUrl) return;
+
+    // Determine type: text ad only if no image AND we have text content
+    const isTextAd = !adData.imgSrc;
+    const ad = {
+      pageUrl: window.location.href,
+      pageDomain: window.location.hostname,
+      pageTitle: document.title,
+      targetUrl: adData.targetUrl,
+      foundTs: Date.now(),
+      contentType: isTextAd ? 'text' : 'img',
+      contentData: isTextAd
+        ? { title: adData.title || '', text: adData.text || '', site: window.location.hostname }
+        : { src: adData.imgSrc || '', width: adData.imgWidth || -1, height: adData.imgHeight || -1 },
+      title: adData.title || (adData.text || '').substring(0, 80) || 'Pending',
+      attempts: 0,
+      visitedTs: 0,
+    };
+
+    logP('Found ad:', ad.contentType, ad.contentType === 'img'
+      ? '(' + ad.contentData.width + 'x' + ad.contentData.height + ') src=' + (ad.contentData.src || '')
+      : 'title="' + (ad.contentData.title || '').substring(0, 40) + '"',
+      'target:', ad.targetUrl);
+
+    // Send to background for registration (dedup, validation, storage).
+    sendAd(ad);
+  }
+
+  // Inside a cross-origin ad sub-frame that is a bare creative with no
+  // .ad-style wrapper at all (nothing matches defaultSelectors/adnAdSelectors,
+  // so processElements() below never finds anything to process), scan every
+  // image directly and walk up to its click-through ancestor. Mirrors the
+  // MV2 parser's all_frames image scan.
+  function scanFrameImages() {
+    const imgs = document.querySelectorAll(imgSelectors.join(', '));
+    if (imgs.length) {
+      logP('Sub-frame image scan:', imgs.length, 'images on', window.location.hostname);
+    }
+    for (const img of imgs) {
+      // Require a click-through ancestor — without one there's nothing to visit
+      const container = findClickableParent(img);
+      if (!container) continue;
+      reportElement(container);
+    }
+  }
+
   // Process elements matching cosmetic filters
   // This is called by uBlock's cosmetic filter injection
   function processElements() {
@@ -556,7 +641,16 @@
       '.sponsored',
       '.pla-unit',
       '.clickable-card',
-      '.GoogleActiveViewElement'
+      '.GoogleActiveViewElement',
+      // Taboola — only paid units (trc-content-sponsored), not organic recs
+      '.trc-content-sponsored',
+      '[data-item-syndicated]',
+      // Outbrain
+      '.ob-rec-link',
+      '.ob-dynamic-rec-link',
+      '.ob_what',
+      // Google AdSense in-feed / matched content
+      'ins.adsbygoogle'
     ];
 
     // The cosmetic scripts (css-specific/css-generic) publish the actual ad
@@ -577,40 +671,16 @@
       }
       logP('Scanning', elements.length, 'elements on', window.location.hostname);
 
-      elements.forEach(element => {
-        // Throttle, don't block: skip only if processed within REPROCESS_DELAY,
-        // so rotating ad slots are re-examined while avoiding per-mutation churn.
-        if (!canProcess(element)) return;
-        markProcessed(element);
+      // Throttle, don't block: reportElement() skips an element only if it
+      // was processed within REPROCESS_DELAY, so rotating ad slots are
+      // re-examined while avoiding per-mutation churn.
+      elements.forEach(reportElement);
 
-        const adData = extractAdData(element);
-        if (adData && adData.targetUrl) {
-          // Determine type: text ad only if no image AND we have text content
-          const isTextAd = !adData.imgSrc;
-          const ad = {
-            pageUrl: window.location.href,
-            pageDomain: window.location.hostname,
-            pageTitle: document.title,
-            targetUrl: adData.targetUrl,
-            foundTs: Date.now(),
-            contentType: isTextAd ? 'text' : 'img',
-            contentData: isTextAd
-              ? { title: adData.title || '', text: adData.text || '', site: window.location.hostname }
-              : { src: adData.imgSrc || '', width: adData.imgWidth || -1, height: adData.imgHeight || -1 },
-            title: adData.title || (adData.text || '').substring(0, 80) || 'Pending',
-            attempts: 0,
-            visitedTs: 0,
-          };
-
-          logP('Found ad:', ad.contentType, ad.contentType === 'img'
-            ? '(' + ad.contentData.width + 'x' + ad.contentData.height + ') src=' + (ad.contentData.src || '')
-            : 'title="' + (ad.contentData.title || '').substring(0, 40) + '"',
-            'target:', ad.targetUrl);
-
-          // Send to background for registration (dedup, validation, storage).
-          sendAd(ad);
-        }
-      });
+      // A cross-origin ad sub-frame may have no selector-matching wrapper at
+      // all (see scanFrameImages), so sweep its images directly.
+      if (window !== window.top) {
+        scanFrameImages();
+      }
     } catch (error) {
       console.error('[ADN Parser] Error processing elements:', error);
     }
