@@ -352,11 +352,32 @@ registerContentScripts.register = async function register() {
     }
 
     if ( toAdd.length !== 0 ) {
-        ubolLog(`Registered ${toAdd.map(v => v.id)} content (css/js)`);
         try {
             await browser.scripting.registerContentScripts(toAdd);
+            ubolLog(`Registered ${toAdd.map(v => v.id)} content (css/js)`);
         } catch(reason) {
-            ubolErr(`registerContentScripts/${reason}`);
+            // ADN: Safari can reject the entire atomic batch when a single
+            // directive is invalid, which silently drops ALL content
+            // scripts — including the ad parser, breaking ad collection.
+            // Fall back to registering each directive on its own so one bad
+            // directive can't take down the rest, and log exactly which
+            // directive Safari rejects. Skip directives the failed batch may
+            // nonetheless have registered, so the retry can't trip on
+            // duplicate-id errors.
+            ubolErr(`registerContentScripts batch failed/${reason}`);
+            const registered = new Set(
+                (await browser.scripting.getRegisteredContentScripts()
+                    .catch(( ) => [ ])).map(v => v.id)
+            );
+            for ( const directive of toAdd ) {
+                if ( registered.has(directive.id) ) { continue; }
+                try {
+                    await browser.scripting.registerContentScripts([ directive ]);
+                    ubolLog(`Registered ${directive.id} content (css/js)`);
+                } catch(reason2) {
+                    ubolErr(`registerContentScripts/${directive.id}/${reason2}`);
+                }
+            }
         }
     }
 
