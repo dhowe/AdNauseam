@@ -1067,6 +1067,17 @@ async function startSession() {
 async function start() {
     await loadRulesetConfig();
 
+    // ADN: Safari tears down the idle background page and revives it as a
+    // wakeup run, which skips startSession() below — so the ad visit queue
+    // must (re)start here, on every background start. Scoped to Safari to
+    // leave other platforms' startup behavior untouched; note the same gap
+    // exists there (a service worker revived by an event also skips
+    // startSession()), so dropping this guard extends the fix everywhere.
+    if ( webextFlavor === 'safari' ) {
+        await adnauseam.ready();
+        startVisitQueue();
+    }
+
     if ( process.wakeupRun === false ) {
         await startSession();
     }
