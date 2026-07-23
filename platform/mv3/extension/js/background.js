@@ -300,6 +300,9 @@ async function applyRulesets(rulesets) {
     if ( (stockUpdated || importedUpdated) === false ) { return; }
     rulesetConfig.enabledRulesets = result.enabledRulesets;
     await saveRulesetConfig();
+    // ADN: re-apply adn-allow, which the list change above may have displaced
+    // (e.g. easyprivacy re-enabled while adn-allow is active on Safari).
+    await applyAdnAllowRulesets(rulesetConfig.adnAllowEnabled);
     const promises = [];
     if ( importedUpdated ) {
         promises.push(
@@ -313,6 +316,67 @@ async function applyRulesets(rulesets) {
     }
     await Promise.all(promises);
     broadcastMessage({ enabledRulesets: rulesetConfig.enabledRulesets });
+}
+
+/******************************************************************************/
+
+// ADN: enable/disable the adn-allow ruleset, which lets ads load so they can
+// be collected and clicked.
+//
+// Dropping easyprivacy is a SAFARI-budget concession, not something we want
+// on Chromium/Firefox: adn-allow is large (it inverts block rules from every
+// enabled list except the small keep-block set — see ADN_BLOCK_LIST_IDS in
+// make-rulesets.js), and together with easyprivacy and the default content
+// lists it exceeds Safari's static-rule budget, so on Safari we must trade
+// easyprivacy away to fit adn-allow. Chromium/Firefox have far more budget
+// and should keep full tracker protection. Hence this is platform-aware:
+//
+//  - Safari: enabling adn-allow alone first (transiently over budget) fails
+//    AND poisons subsequent updateEnabledRulesets() calls in the same
+//    session, so we go straight to the combined call that disables
+//    easyprivacy and enables adn-allow at once — the only form that works.
+//    Safari also resolves updateEnabledRulesets() even when it fails to
+//    apply, so we verify the outcome with getEnabledRulesets().
+//
+//  - Chromium/Firefox: try to enable adn-allow WITHOUT touching easyprivacy.
+//    There, updateEnabledRulesets() cleanly rejects if over budget (no
+//    poisoning), leaving state unchanged, so this is safe to attempt. If it
+//    does turn out to be over budget we fall back to the easyprivacy-dropping
+//    path — i.e. we never end up worse than the old unconditional behavior,
+//    and in the (expected) headroom case we keep easyprivacy enabled.
+async function applyAdnAllowRulesets(enabled) {
+    const isEnabled = async ( ) =>
+        (await dnr.getEnabledRulesets()).includes('adn-allow');
+    if ( enabled === false ) {
+        await dnr.updateEnabledRulesets({
+            disableRulesetIds: [ 'adn-allow' ],
+        }).catch(( ) => { });
+        // Restore easyprivacy if it was dropped for budget (no-op otherwise).
+        await enableRulesets(rulesetConfig.enabledRulesets).catch(( ) => { });
+        return true;
+    }
+    // Non-Safari: keep easyprivacy; only fall back to dropping it if adn-allow
+    // genuinely doesn't fit.
+    if ( webextFlavor !== 'safari' ) {
+        await dnr.updateEnabledRulesets({
+            enableRulesetIds: [ 'adn-allow' ],
+        }).catch(e => { ubolErr(`adn-allow enable failed: ${e}`); });
+        if ( await isEnabled() ) {
+            ubolLog('adn-allow enabled (easyprivacy preserved)');
+            return true;
+        }
+        ubolLog('adn-allow over budget alongside easyprivacy; dropping easyprivacy');
+    }
+    await dnr.updateEnabledRulesets({
+        disableRulesetIds: [ 'easyprivacy' ],
+        enableRulesetIds: [ 'adn-allow' ],
+    }).catch(e => { ubolErr(`adn-allow enable failed: ${e}`); });
+    if ( await isEnabled() ) {
+        ubolLog('adn-allow enabled (easyprivacy disabled for static rule budget)');
+        return true;
+    }
+    ubolErr('adn-allow: could not be enabled');
+    return false;
 }
 
 /******************************************************************************/
@@ -498,16 +562,18 @@ async function onMessage(request, sender) {
 
 		case 'setAdnAllow': {
 			const { enabled } = request;
-			return dnr.updateEnabledRulesets({
-				enableRulesetIds: enabled ? ['adn-allow'] : [],
-				disableRulesetIds: enabled ? [] : ['adn-allow'],
-			}).then(() => {
+			try {
+				const ok = await applyAdnAllowRulesets(enabled);
+				if ( ok === false ) {
+					return { success: false, error: 'Failed to apply rulesets' };
+				}
 				rulesetConfig.adnAllowEnabled = enabled;
-				return saveRulesetConfig();
-			}).then(() => {
+				await saveRulesetConfig();
 				broadcastMessage({ adnAllowEnabled: enabled });
 				return { success: true };
-			}).catch(err => ({ success: false, error: String(err) }));
+			} catch ( err ) {
+				return { success: false, error: String(err) };
+			}
 		}
 
 		case 'getAdnAllow': {
@@ -976,9 +1042,10 @@ async function startSession() {
         saveRulesetConfig();
     }
 
-    await dnr.updateEnabledRulesets({
-        enableRulesetIds: ['adn-allow'],   // adn
-    }).catch(() => {});
+    // ADN: budget/platform-aware adn-allow apply (see applyAdnAllowRulesets).
+    // Honors the persisted setting — a user who turned ad collection off
+    // must not have adn-allow silently re-enabled on the next cold start.
+    await applyAdnAllowRulesets(rulesetConfig.adnAllowEnabled);
 
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/declarativeNetRequest#rulesets
     // "The set of enabled static rulesets is persisted across sessions but not across extension updates"
