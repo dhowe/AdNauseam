@@ -14,14 +14,14 @@ The following assumes a linux environment.
 
 Upon completion of the script, the resulting extension package will become present in:
 
-- Chromium: `dist/build/uBOLite.chromium`
-- Edge: `dist/build/uBOLite.edge`
-- Firefox: `dist/build/uBOLite.firefox`
-- Safari: `dist/build/uBOLite.safari`
+- Chromium: `dist/build/ADNLite.chromium`
+- Edge: `dist/build/ADNLite.edge`
+- Firefox: `dist/build/ADNLite.firefox`
+- Safari: `dist/build/ADNLite.safari`
 
 The folder `dist/build/mv3-data` will cache data fetched from remote servers, so as to avoid fetching repeatedly from remote servers with repeated build commands. Use `make cleanassets` to remove all locally cached filter lists if you want to build with latest versions of filter lists.
 
-The file `dist/build/uBOLite.[platform]/log.txt` will contain information about what happened during the build process.
+The file `dist/build/ADNLite.[platform]/log.txt` will contain information about what happened during the build process.
 
 The entry in the `Makefile` which implement the build process is `tools/make-mv3.sh [platform]`.[1] This Bash script copy various files from uBlock Origin branch and MV3-specific branch into a single folder which will be the final extension package.
 

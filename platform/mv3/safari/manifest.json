@@ -3,7 +3,7 @@
     "default_icon": "/img/icon_64.png",
     "default_popup": "popup.html"
   },
-  "author": "Raymond Hill",
+  "author": "Daniel C. Howe",
   "background": {
     "scripts": [ "/js/background.js" ],
     "type": "module",
@@ -52,7 +52,7 @@
     "storage",
     "unlimitedStorage"
   ],
-  "short_name": "uBO Lite",
+  "short_name": "AdNauseam",
   "version": "1.0",
   "web_accessible_resources": [
     {

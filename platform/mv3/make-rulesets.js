@@ -204,6 +204,21 @@ const ADN_BLOCK_LIST_IDS = new Set([
     'annoyances-social',  // Social blocking (Anti-ThirdpartySocial / Fanboy Social)
 ]);
 const ADN_ALLOW_RESOURCE_TYPES = ['image', 'media', 'object', 'script', 'sub_frame', 'xmlhttprequest'];
+// ADN: on Safari, adn-allow priority must beat every ordinary
+// (non-keep-block-list) block rule it counteracts — including $important
+// ones, which compile to priority 40 (vs. 10 for a plain block rule) — so
+// ads still load even when their blocking rule is marked important.
+// ADN_BLOCK_LIST_IDS's keep-block bump must in turn beat every adn-allow
+// rule, so malware/badware/anti-adblock/social/AdNauseam's own filters can
+// never be overridden by adn-allow. The invariant chain, low to high:
+//   ordinary block (<=40) < adn-allow (own priority + 50, <=90) < keep-block (200)
+// Scoped to the safari platform so every other platform's generated
+// rulesets stay identical to before. Note the 40-over-20 hole exists in
+// those rulesets too (an $important block rule outranks adn-allow's fixed
+// 20); using these priorities unconditionally fixes it everywhere.
+const ADN_SAFARI_PRIORITIES = platform === 'safari';
+const ADN_ALLOW_PRIORITY_OFFSET = 50;
+const ADN_KEEP_BLOCK_PRIORITY = 200;
 let networkBad = new Set();
 
 /******************************************************************************/
@@ -649,14 +664,16 @@ async function processDnrRules(assetDetails, network, dnrRules) {
     log(`\tUnsupported: ${bad.length}`);
     log(bad.map(rule => rule._error.map(v => `\t\t${v}`)).join('\n'), true);
 
-   ; // ADN: keep-block lists (malware/badware/etc.) must outrank adn-allow's
-    // allow rules (priority 20) so their blocks can never be overridden.
+    // ADN: keep-block lists (malware/badware/etc.) must outrank adn-allow's
+    // allow rules (see ADN_ALLOW_PRIORITY_OFFSET/ADN_KEEP_BLOCK_PRIORITY
+    // above) so their blocks can never be overridden.
     if ( ADN_BLOCK_LIST_IDS.has(assetDetails.id) ) {
+        const keepBlockPriority = ADN_SAFARI_PRIORITIES ? ADN_KEEP_BLOCK_PRIORITY : 30;
         for ( const rule of staticRules ) {
-            if ( rule.action?.type === 'block' ) { rule.priority = 30; }
+            if ( rule.action?.type === 'block' ) { rule.priority = keepBlockPriority; }
         }
         for ( const rule of regexRules ) {
-            if ( rule.action?.type === 'block' ) { rule.priority = 30; }
+            if ( rule.action?.type === 'block' ) { rule.priority = keepBlockPriority; }
         }
     }
 
@@ -671,7 +688,9 @@ async function processDnrRules(assetDetails, network, dnrRules) {
             if ( rule.action?.type !== 'block' ) { continue; }
             const cloned = JSON.parse(JSON.stringify(rule));
             cloned.action = { type: 'allow' };
-            cloned.priority = 20;
+            cloned.priority = ADN_SAFARI_PRIORITIES
+                ? (rule.priority || 1) + ADN_ALLOW_PRIORITY_OFFSET
+                : 20;
             delete cloned.id;
             if ( cloned.condition === undefined ) { cloned.condition = {}; }
             const existingTypes = cloned.condition.resourceTypes;
