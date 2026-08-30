@@ -65,6 +65,19 @@ class PSelectorVoidTask {
     transpose() {
     }
 }
+
+class PSelectorContentTask {
+    constructor(task) {
+        this.selector = task[1];
+    }
+    transpose(node, output) {
+        const root = node.content;
+        if ( typeof root?.querySelectorAll !== 'function' ) { return; }
+        const nodes = root.querySelectorAll(this.selector);
+        output.push(...nodes);
+    }
+}
+
 class PSelectorHasTextTask {
     constructor(task) {
         this.needle = regexFromString(task[1]);
@@ -238,6 +251,7 @@ class PSelector {
     }
 }
 PSelector.prototype.operatorToTaskMap = new Map([
+    [ 'content', PSelectorContentTask ],
     [ 'has', PSelectorIfTask ],
     [ 'has-text', PSelectorHasTextTask ],
     [ 'if', PSelectorIfTask ],
@@ -329,7 +343,7 @@ htmlFilteringEngine.compile = function(parser, writer) {
     // Only exception filters are allowed to be global.
     if ( parser.hasOptions() === false ) {
         if ( isException ) {
-            writer.push([ 64, '', 1, compiled ]);
+            writer.push([ 64, '', `-${compiled}` ]);
         }
         return;
     }
@@ -338,10 +352,11 @@ htmlFilteringEngine.compile = function(parser, writer) {
     let hasOnlyNegated = true;
     for ( const { hn, not, bad } of parser.getExtFilterDomainIterator() ) {
         if ( bad ) { continue; }
-        const prefix = ((isException ? 1 : 0) ^ (not ? 1 : 0)) ? '-' : '+';
         if ( not === false ) {
             hasOnlyNegated = false;
         }
+        if ( isException && not ) { continue; }
+        const prefix = isException || not ? '-' : '+';
         compiledFilters.push([ 64, hn, `${prefix}${compiled}` ]);
     }
 

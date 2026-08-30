@@ -186,17 +186,27 @@ vAPI.webextFlavor = {
     flavor.isGecko = extensionOrigin.startsWith('moz-extension://');
     if ( flavor.isGecko ) {
         soup.add('firefox')
-            .add('user_stylesheet')
             .add('html_filtering');
         const match = /Firefox\/(\d+)/.exec(ua);
         flavor.major = match && parseInt(match[1], 10) || 115;
     } else {
         const match = /\bChrom(?:e|ium)\/(\d+)/.exec(ua);
         if ( match !== null ) {
-            soup.add('chromium')
-                .add('user_stylesheet');
+            soup.add('chromium');
         }
         flavor.major = match && parseInt(match[1], 10) || 120;
+        // Brave can't be told apart through the user agent string, which is
+        // identical to Chrome's. Both tests below are synchronous, whereas
+        // navigator.brave.isBrave() is promise-based -- the flavor must be
+        // settled before filter lists are compiled and cached. Either test
+        // alone would do, the second one is a fallback for the first.
+        // https://github.com/brave/brave-browser/wiki/Detecting-Brave-(for-Websites)
+        if (
+            navigator.brave instanceof Object ||
+            navigator.userAgentData?.brands?.some(a => a.brand === 'Brave')
+        ) {
+            soup.add('brave');
+        }
     }
 
     // Don't starve potential listeners

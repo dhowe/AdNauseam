@@ -36,7 +36,7 @@
     "description": "Link to privacy policy on GitHub (English)"
   },
   "aboutDocumentation": {
-    "message": "Documentation",
+    "message": "Documentação",
     "description": "Link to documentation in About pane"
   },
   "popupFilteringModeLabel": {
@@ -76,7 +76,7 @@
     "description": "Header for a ruleset section in 'Filter lists pane'"
   },
   "3pGroupMalware": {
-    "message": "Proteção contra malware, segurança",
+    "message": "Proteção contra malware e segurança",
     "description": "Header for a ruleset section in 'Filter lists pane'"
   },
   "3pGroupAnnoyances": {
@@ -103,24 +103,28 @@
     "message": "URL da lista de filtros a adicionar",
     "description": "Placeholder text which describes the purpose of the textarea widget"
   },
+  "customListImportUserScriptsInfo": {
+    "message": "Para aplicar filtros cosméticos ou de scriptlet provenientes de listas importadas, tem de conceder ao uBO Lite permissão para executar scripts do utilizador.",
+    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+  },
   "customFiltersImportExportLabel": {
     "message": "Importar/Exportar",
     "description": "Text label heading the import/export area of custom filters"
   },
   "customFiltersImportTextareaPlaceholder": {
-    "message": "Filtros cosméticos/scriptlets específicos a adicionar",
+    "message": "Filtros cosméticos/de scriptlet específicos a adicionar",
     "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "userScriptsInfo": {
-    "message": "Para aplicar filtros cosméticos ou scriptlets provenientes de listas importadas, é necessário conceder ao uBO Lite permissão para executar scripts do utilizador. Abra a página de extensões do navegador (<code>chrome://extensions</code> no Chrome ou <code>about:addons</code> no Firefox), abra os detalhes do <b>uBO Lite</b> e ative a opção <b>Permitir scripts do utilizador</b> (também designada por \"scripts de terceiros não verificados\").",
-    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+    "message": "Abra a página de extensões do seu navegador (<code>chrome://extensions</code> no Chrome ou <code>about:addons</code> no Firefox), abra os detalhes do <b>uBO Lite</b> e ative a opção <b>Permitir scripts do utilizador</b> (também designada por \"scripts de terceiros não verificados\").",
+    "description": "A notice to inform user on how to enable 'user scripts' permission"
   },
   "aboutChangelog": {
     "message": "Registo de alterações",
     "description": ""
   },
   "aboutCode": {
-    "message": "Código fonte (GPLv3)",
+    "message": "Código-fonte (GPLv3)",
     "description": "English: Source code (GPLv3)"
   },
   "aboutContributors": {
@@ -128,7 +132,7 @@
     "description": "English: Contributors"
   },
   "aboutSourceCode": {
-    "message": "Código fonte",
+    "message": "Código-fonte",
     "description": "Link text to source code repo"
   },
   "aboutTranslations": {
@@ -286,6 +290,10 @@
   "sandboxEditorLabel": {
     "message": "Sandbox para criação de filtros",
     "description": "Header for filter-creation section in the dashboard"
+  },
+  "sandboxEditorUserScriptsInfo": {
+    "message": "Para aplicar filtros cosméticos ou de scriptlet provenientes da sandbox, tem de conceder ao uBO Lite permissão para executar scripts do utilizador.",
+    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
   },
   "developerModeLabel": {
     "message": "Modo de programador",

@@ -142,9 +142,9 @@ function mergeDomains(rules, includeProp, excludeProp) {
             out.push(rule);
             continue;
         }
-        const includes = new Set(rule.condition[includeProp]);
+        const includes = rule.condition[includeProp];
         rule.condition[includeProp] = undefined;
-        const excludes = new Set(rule.condition[excludeProp]);
+        const excludes = rule.condition[excludeProp];
         rule.condition[excludeProp] = undefined;
         rule.id = undefined;
         const hash = JSON.stringify(rule, propertySorter);
@@ -153,32 +153,33 @@ function mergeDomains(rules, includeProp, excludeProp) {
             details.initialized = true;
             distinctRules.set(hash, details);
         }
-        if ( includes.size === 0 ) {
-            details.includes = includes;
+        if ( Boolean(includes?.length) === false ) {
+            details.includes = [];
         } else if ( details.includes === undefined ) {
             details.includes = includes;
-        } else if ( details.includes.size ) {
-            details.includes = details.includes.union(includes);
+        } else if ( details.includes.length ) {
+            for ( const hn of includes ) {
+                details.includes.push(hn);
+            }
         }
-        if ( excludes.size ) {
-            details.excludes ??= new Set();
-            details.excludes = details.excludes.union(excludes);
+        if ( excludes?.length ) {
+            if ( details.excludes === undefined ) {
+                details.excludes = excludes;
+            } else {
+                for ( const hn of excludes ) {
+                    details.excludes.push(hn);
+                }
+            }
         }
     }
     for ( const [ hash, details ] of distinctRules ) {
         const rule = JSON.parse(hash);
         rule.id = details.id;
-        if ( details.includes?.size ) {
-            rule.condition[includeProp] = Array.from(details.includes);
+        if ( details.includes?.length ) {
+            rule.condition[includeProp] = Array.from(new Set(details.includes)).sort();
         }
-        if ( details.excludes?.size ) {
-            rule.condition[excludeProp] = Array.from(details.excludes);
-        }
-        if ( rule.condition[includeProp] ) {
-            rule.condition[includeProp].sort();
-        }
-        if ( rule.condition[excludeProp] ) {
-            rule.condition[excludeProp].sort();
+        if ( details.excludes?.length ) {
+            rule.condition[excludeProp] = Array.from(new Set(details.excludes)).sort();
         }
         out.push(rule);
     }
@@ -197,13 +198,13 @@ function mergeArrays(rules, propertyPath, emptyIsAll = false) {
             out.push(rule);
             continue;
         }
-        if ( Array.isArray(owner[prop]) === false || owner[prop].length === 0 ) {
+        const collection = owner[prop];
+        if ( Array.isArray(collection) === false || collection.length === 0 ) {
             if ( emptyIsAll === false ) {
                 out.push(rule);
                 continue;
             }
         }
-        const collection = new Set(owner[prop]);
         owner[prop] = undefined;
         rule.id = undefined;
         const hash = JSON.stringify(rule, propertySorter);
@@ -212,12 +213,14 @@ function mergeArrays(rules, propertyPath, emptyIsAll = false) {
             details.initialized = true;
             distinctRules.set(hash, details);
         }
-        if ( collection.size === 0 ) {
-            details.collection = collection;
+        if ( Boolean(collection?.length) === false ) {
+            details.collection = [];
         } else if ( details.collection === undefined ) {
             details.collection = collection;
-        } else if ( details.collection.size ) {
-            details.collection = details.collection.union(collection);
+        } else if ( details.collection.length ) {
+            for ( const v of collection ) {
+                details.collection.push(v);
+            }
         }
     }
     for ( const [ hash, { id, collection } ] of distinctRules ) {
@@ -225,9 +228,9 @@ function mergeArrays(rules, propertyPath, emptyIsAll = false) {
         if ( id ) {
             rule.id = id;
         }
-        if ( collection.size !== 0 ) {
+        if ( collection?.length ) {
             const { owner, prop } = ownerFromPropertyPath(rule, propertyPath);
-            owner[prop] = Array.from(collection).sort();
+            owner[prop] = Array.from(new Set(collection)).sort();
         }
         out.push(rule);
     }
@@ -306,6 +309,45 @@ function dropEntities(rule, prop) {
 
 /******************************************************************************/
 
+function convertInitiatorDomainsToRequestDomains(rule) {
+    if ( rule.condition.initiatorDomains ) {
+        rule.condition.requestDomains ??= [];
+        rule.condition.requestDomains = [
+            ...rule.condition.requestDomains,
+            ...rule.condition.initiatorDomains,
+        ];
+        delete rule.condition.initiatorDomains;
+    }
+    if ( rule.condition.excludedInitiatorDomains ) {
+        rule.condition.excludedRequestDomains ??= [];
+        rule.condition.excludedRequestDomains = [
+            ...rule.condition.excludedRequestDomains,
+            ...rule.condition.excludedInitiatorDomains,
+        ];
+        delete rule.condition.excludedInitiatorDomains;
+    }
+}
+
+/******************************************************************************/
+
+// https://github.com/uBlockOrigin/uBOL-home/discussions/736
+
+export function expandRemoveparamsRule(rule0, out) {
+    if ( Boolean(rule0.condition.resourceTypes?.includes('main_frame')) === false ) { return; }
+    if ( rule0.condition.initiatorDomains === undefined ) { return; }
+    if ( rule0.condition.resourceTypes.length === 1 ) {
+        convertInitiatorDomainsToRequestDomains(rule0);
+        return;
+    }
+    const rule1 = structuredClone(rule0);
+    rule0.condition.resourceTypes = rule0.condition.resourceTypes.filter(a => a !== 'main_frame');
+    rule1.condition.resourceTypes = [ 'main_frame' ];
+    convertInitiatorDomainsToRequestDomains(rule1);
+    out.push(rule1);
+}
+
+/******************************************************************************/
+
 export function validateRules(rules) {
     const out = [];
     for ( const rule of rules ) {
@@ -343,7 +385,7 @@ export function validateRules(rules) {
 //   Block important: 40
 //   Redirect important: 41-49
 
-export function parseNetworkFilter(parser, details = {}) {
+export function parseNetworkFilter(parser, details = {}, out = []) {
     if ( parser.isNetworkFilter() === false ) { return; }
     if ( parser.hasError() ) { return; }
 
@@ -714,7 +756,11 @@ export function parseNetworkFilter(parser, details = {}) {
     if ( priority !== 1 ) {
         rule.priority = priority;
     }
-    return rule;
+    out.push(rule);
+    if ( rule.action.redirect?.transform?.queryTransform?.removeParams ) {
+        expandRemoveparamsRule(rule, out);
+    }
+    return out;
 }
 
 /******************************************************************************/
@@ -729,9 +775,7 @@ export function parseFilters(text, details) {
     for ( const line of lines ) {
         parser.parse(line);
         if ( parser.isNetworkFilter() === false ) { continue; }
-        const rule = parseNetworkFilter(parser, details);
-        if ( rule === undefined ) { continue; }
-        rules.push(rule);
+        parseNetworkFilter(parser, details, rules);
     }
     rules = minimizeRuleset(rules);
     rules = minimizeRules(rules);

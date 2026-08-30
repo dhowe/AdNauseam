@@ -1,3 +1,19 @@
+- [Fix possible injection of scriptlets requiring trust from non-trusted sources](https://github.com/gorhill/uBlock/commit/a46d5c8e75)
+- [Import `google-ima-dai` shim from AdGuard shims](https://github.com/gorhill/uBlock/commit/933efff4dd)
+- [Replace List-KR with filterslists-KO](https://github.com/gorhill/uBlock/commit/20d3c5b9d0)
+- [Remove support for `cap_user_stylesheet`](https://github.com/gorhill/uBlock/commit/fb09b0947d)
+- [Improve scriptlets framework](https://github.com/gorhill/uBlock/commit/57ade5f484)
+- [Add `env_brave` preparser token](https://github.com/gorhill/uBlock/commit/0c56103a40) (by @ryanbr)
+- [Add set/unset/given cookie values](https://github.com/gorhill/uBlock/commit/a796fd7daf) (by @ryanbr)
+- [Add procedural operator `content(...)`, to lookup elements inside `template` tags](https://github.com/gorhill/uBlock/commit/25d413803d)
+- [Improve `prevent-clipboard-write` scriptlet](https://github.com/gorhill/uBlock/commit/8a85e04907)
+- [Improve `json-edit` scriptlet](https://github.com/gorhill/uBlock/commit/0fdbfdb2b5)
+- [Revisit scriptlets' `getExtraArgs` implementation](https://github.com/gorhill/uBlock/commit/505fbc7a75)
+
+----------
+
+# 1.73.0
+
 - [[logger] Preserve whitespace characters](https://github.com/gorhill/uBlock/commit/ef981d09b5)
 - [Improve `proxy-apply` utility scriptlet](https://github.com/gorhill/uBlock/commit/be3bb05fce)
 - [Improve `abort-current-script` scriptlet](https://github.com/gorhill/uBlock/commit/84e4bd7659)

@@ -604,6 +604,7 @@ export const preparserIfTokens = new Set([
     'ext_ublock',
     'ext_ubol',
     'ext_devbuild',
+    'env_brave',
     'env_chromium',
     'env_edge',
     'env_firefox',
@@ -3312,6 +3313,7 @@ export class ExtSelectorCompiler {
             ':style',
         ]);
         this.proceduralOperatorNames = new Set([
+            'content',
             'has-text',
             'if',
             'if-not',
@@ -3959,6 +3961,8 @@ export class ExtSelectorCompiler {
         const arg = this.astSerialize(parts, false);
         if ( arg === undefined ) { return; }
         switch ( operator ) {
+        case 'content':
+            return this.compileSelector(arg);
         case 'has-text':
             return this.compileText(arg);
         case 'if':
@@ -4194,6 +4198,7 @@ export const proceduralOperatorTokens = new Map([
     [ '-abp-contains', 0b00 ],
     [ '-abp-has', 0b00, ],
     [ 'contains', 0b00, ],
+    [ 'content', 0b01, ],
     [ 'has', 0b01 ],
     [ 'has-text', 0b01 ],
     [ 'if', 0b00 ],
@@ -4207,9 +4212,10 @@ export const proceduralOperatorTokens = new Map([
     [ 'not', 0b01 ],
     [ 'nth-ancestor', 0b00 ],
     [ 'others', 0b11 ],
-    [ 'remove', 0b11 ],
+    [ 'remove', 0b01 ],
     [ 'remove-attr', 0b11 ],
     [ 'remove-class', 0b11 ],
+    [ 'shadow', 0b11, ],
     [ 'style', 0b11 ],
     [ 'upward', 0b01 ],
     [ 'watch-attr', 0b11 ],
@@ -4225,6 +4231,7 @@ export const utils = (( ) => {
         [ 'ext_ublock', 'ublock' ],
         [ 'ext_ubol', 'ubol' ],
         [ 'ext_devbuild', 'devbuild' ],
+        [ 'env_brave', 'brave' ],
         [ 'env_chromium', 'chromium' ],
         [ 'env_edge', 'edge' ],
         [ 'env_firefox', 'firefox' ],
@@ -4233,7 +4240,6 @@ export const utils = (( ) => {
         [ 'env_mv3', 'mv3' ],
         [ 'env_safari', 'safari' ],
         [ 'cap_html_filtering', 'html_filtering' ],
-        [ 'cap_user_stylesheet', 'user_stylesheet' ],
         [ 'cap_ipaddress', 'ipaddress' ],
         [ 'false', 'false' ],
         // Hoping ABP-only list maintainers can at least make use of it to

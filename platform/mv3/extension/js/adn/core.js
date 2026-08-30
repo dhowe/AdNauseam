@@ -389,17 +389,24 @@ async function clearBadge(tabId) {
   }
 }
 
-// Index of existing ads keyed by the canonical content hash, for O(1) cross-page
-// duplicate lookups. Lazily (re)built; invalidated (set null) when ads change.
-// Uses MV2's computeHash (full targetUrl + full contentData, params included), so
-// ads that differ in target or any param — including image-src query — are kept
-// distinct rather than merged by image path. // adn
+// Index for O(1) cross-page duplicate lookups, keyed by MV2's computeHash and by
+// image src. Lazily (re)built; invalidated (set null) when ads change. // adn
 let adIndex = null;
+
+// Exact image src: the hash includes targetUrl, which ad servers re-mint per
+// impression, so the same creative would otherwise be re-collected. // adn
+function adSrcKey(ad) { // adn
+  if (!ad || ad.contentType !== 'img') return null; // adn
+  const src = ad.contentData && ad.contentData.src; // adn
+  return (typeof src === 'string' && src.length) ? 'src:' + src : null; // adn
+} // adn
 
 function indexAd(ad) {
   if (adIndex === null) return;
-  const h = computeHash(ad); // adn: dedup by full-content hash, not image path
+  const h = computeHash(ad); // adn
   if (h) adIndex.set(h, ad); // adn
+  const src = adSrcKey(ad); // adn
+  if (src) adIndex.set(src, ad); // adn
 }
 
 function buildAdIndex() {
@@ -408,7 +415,7 @@ function buildAdIndex() {
   for (let i = 0; i < ads.length; i++) indexAd(ads[i]);
 }
 
-// Find an existing ad with the same canonical content hash, across all pages.
+// Find an existing ad with the same content hash or image src, across all pages.
 function findDuplicateAd(ad) {
   if (adIndex === null) buildAdIndex();
   const h = computeHash(ad); // adn
@@ -416,6 +423,11 @@ function findDuplicateAd(ad) {
     const hit = adIndex.get(h);
     if (hit) return hit;
   }
+  const src = adSrcKey(ad); // adn
+  if (src) { // adn
+    const hit = adIndex.get(src); // adn
+    if (hit) return hit; // adn
+  } // adn
   return null;
 }
 
@@ -463,7 +475,7 @@ async function registerAd(ad, tab) {
     return warn('[ADN INTERN] Ignoring Ad on ' + ad.pageDomain + ', target: ' + ad.targetUrl);
   }
 
-  // Skip duplicates across all pages by targetUrl OR image src path.
+  // Skip duplicates across all pages, by content hash or image src. // adn
   const dup = findDuplicateAd(ad);
   if (dup) {
     log('[ADN EXISTS] Duplicate of Ad#' + (dup.id || '?') + ': ' + ad.targetUrl);

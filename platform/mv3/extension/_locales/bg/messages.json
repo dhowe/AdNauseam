@@ -36,7 +36,7 @@
     "description": "Link to privacy policy on GitHub (English)"
   },
   "aboutDocumentation": {
-    "message": "Documentation",
+    "message": "Документация",
     "description": "Link to documentation in About pane"
   },
   "popupFilteringModeLabel": {
@@ -103,6 +103,10 @@
     "message": "Поставете тук URL адреса на списъка с филтри, който искате да добавите",
     "description": "Placeholder text which describes the purpose of the textarea widget"
   },
+  "customListImportUserScriptsInfo": {
+    "message": "За да приложите козметични филтри или скриптови филтри от импортирани списъци, трябва да предоставите на uBO Lite разрешение за изпълнение на потребителски скриптове.",
+    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+  },
   "customFiltersImportExportLabel": {
     "message": "Импортиране / експортиране",
     "description": "Text label heading the import/export area of custom filters"
@@ -112,8 +116,8 @@
     "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "userScriptsInfo": {
-    "message": "За да приложите козметични филтри или филтри за скриптове от импортирани списъци, трябва да предоставите на uBO Lite разрешение да изпълнява потребителски скриптове. Отворете страницата с разширенията на браузъра си (<code>chrome://extensions</code> в Chrome или <code>about:addons</code> във Firefox), отворете подробностите за <b>uBO Lite</b> и активирайте опцията <b>Разрешаване на потребителски скриптове</b> (наричани още „непроверени скриптове от трети страни“).",
-    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+    "message": "Отворете страницата с разширенията на браузъра си (<code>chrome://extensions</code> в Chrome или <code>about:addons</code> във Firefox), отворете подробностите за <b>uBO Lite</b> и активирайте опцията <b>Разрешаване на потребителски скриптове</b> (наричани още „непроверени скриптове от трети страни“).",
+    "description": "A notice to inform user on how to enable 'user scripts' permission"
   },
   "aboutChangelog": {
     "message": "Списък с промени",
@@ -287,6 +291,10 @@
     "message": "Тестова среда за създаване на филтри",
     "description": "Header for filter-creation section in the dashboard"
   },
+  "sandboxEditorUserScriptsInfo": {
+    "message": "За да активирате козметични филтри или скриптлет филтри от пясъчника, трябва да предоставите на uBO Lite разрешение за изпълнение на потребителски скриптове.",
+    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+  },
   "developerModeLabel": {
     "message": "Режим за програмисти",
     "description": "Label for a checkbox in the options page"
@@ -348,7 +356,7 @@
     "description": "A button to navigate to the blocked page"
   },
   "zapperTipEnter": {
-    "message": "Влизане в режима на временно скриване на елемента",
+    "message": "Премахване на елемент",
     "description": "Tooltip for the button used to enter zapper mode"
   },
   "zapperTipQuit": {

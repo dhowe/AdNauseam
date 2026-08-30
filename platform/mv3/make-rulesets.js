@@ -31,6 +31,10 @@ import {
     dnrRulesetFromRawLists,
     mergeRules,
 } from './js/static-dnr-filtering.js';
+import {
+    expandRemoveparamsRule,
+    minimizeRuleset,
+} from './js/ubo-parser.js';
 
 import { execSync } from 'node:child_process';
 import { fetchList } from './js/offscreen/fetch-list.js';
@@ -38,7 +42,6 @@ import fs from 'fs/promises';
 import { hostnameCompare } from './js/offscreen/make-utils.js';
 import { literalStrFromRegex } from './js/offscreen/regex-analyzer.js';
 import { makeCosmeticScripts } from './js/offscreen/make-cosmetic-filters.js';
-import { minimizeRuleset } from './js/ubo-parser.js';
 import path from 'path';
 import process from 'process';
 import redirectResourcesMap from './js/redirect-resources.js';
@@ -79,7 +82,6 @@ const env = [
     'mv3',
     'ublock',
     'ubol',
-    'user_stylesheet',
     ...envExtra,
 ];
 
@@ -603,6 +605,13 @@ async function processDnrRules(assetDetails, network, dnrRules) {
         );
     });
 
+    // Patch removeParams rules as needed
+    for ( const rule of staticRules ) {
+        if ( rule.action.redirect?.transform?.queryTransform?.removeParams ) {
+            expandRemoveparamsRule(rule, staticRules);
+        }
+    }
+
     // Minimize rulesets
     const minimizedStaticRuleset = minimizeRuleset(staticRules);
     log(`\tStatic rules (raw/minimized): ${staticRules.length}/${minimizedStaticRuleset.length}`);
@@ -936,6 +945,7 @@ async function processPopupRules(assetDetails, popupRules) {
         const { condition }  = rule;
         if ( condition.domainType ) { return data; }
         if ( condition.initiatorDomains ) { return data; }
+        if ( condition.excludedInitiatorDomains ) { return data; }
         const { type } = rule.action;
         if ( type !== 'block' && type !== 'allow' ) { return data; }
         const realm = type === 'block' ? data.block : data.allow;
@@ -953,11 +963,17 @@ async function processPopupRules(assetDetails, popupRules) {
             }
             if ( re === undefined ) { return data; }
             const token = literalStrFromRegex(re).slice(0, 7);
-            const key = `${isUrlFilterCaseSensitive ? ' ' : 'i'}${token}`;
-            if ( realm.regexes.has(key) ) {
-                realm.regexes.set(key, `${realm.regexes.get(key)}|${re}`);
-            } else {
-                realm.regexes.set(key, re);
+            const details = realm.regexes.get(token) ?? { token, rules: [] };
+            if ( details.rules.length === 0 ) {
+                realm.regexes.set(token, details)
+            }
+            const entry = { re, f: isUrlFilterCaseSensitive ? '' : 'i' };
+            details.rules.push(entry);
+            if ( condition.requestDomains ) {
+                entry.to = condition.requestDomains.sort(hostnameCompare);
+            }
+            if ( condition.excludedRequestDomains ) {
+                entry.xto = condition.excludedRequestDomains.sort(hostnameCompare);
             }
             return data;
         }
@@ -991,9 +1007,13 @@ async function processPopupRules(assetDetails, popupRules) {
     const count = data.block.hostnames.length + data.block.regexes.size;
     if ( count === 0 ) { return; }
     data.block.hostnames = data.block.hostnames.toSorted(hostnameCompare);
-    data.block.regexes = Array.from(data.block.regexes).flat();
+    data.block.regexes = Array.from(data.block.regexes.values()).map(a =>
+        [ a.token, JSON.stringify(a.rules) ]
+    ).flat();
     data.allow.hostnames = data.allow.hostnames.toSorted(hostnameCompare);
-    data.allow.regexes = Array.from(data.allow.regexes).flat();
+    data.allow.regexes = Array.from(data.allow.regexes.values()).map(a =>
+        [ a.token, JSON.stringify(a.rules) ]
+    ).flat();
     const originalScriptletMap = await loadAllSourceScriptlets();
     let patchedScriptlet = originalScriptletMap.get(`prevent-popup`);
     patchedScriptlet = safeReplace(patchedScriptlet,

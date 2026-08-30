@@ -103,6 +103,10 @@
     "message": "ჩასვით სიის ბმული დასამატებლად",
     "description": "Placeholder text which describes the purpose of the textarea widget"
   },
+  "customListImportUserScriptsInfo": {
+    "message": "გარეგნული ან სკრიპტული ფილტრების იძულებით ამოქმედებისთვის შემოტანილი სიებიდან, uBO Lite საჭიროებს მომხმარებლის სკრიპტების გაშვების ნებართვებს.",
+    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+  },
   "customFiltersImportExportLabel": {
     "message": "შემოტანა / გატანა",
     "description": "Text label heading the import/export area of custom filters"
@@ -113,7 +117,7 @@
   },
   "userScriptsInfo": {
     "message": "გარეგნული ან მცირე სკრიპტის ფილტრების იძულებით ასამოქმედებლად შემოტანილი სიებიდან, uBO Lite უნდა იყოს სკრიპტების გაშვების ნებართვის მქონე. გახსენით ბრაუზერის გაფართოებების გვერდი (<code>chrome://extensions</code> Chrome-ში ან <code>about:addons</code> Firefox-ში), იხილეთ <b>uBO Lite</b> ვრცლად და გადართეთ <b>მომხმარებლის სკრიპტების ნებართვა</b> (აგრეთვე შეიძლება ეწეროს „დაუმოწმებელი გარეშე სკრიპტები“).",
-    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+    "description": "A notice to inform user on how to enable 'user scripts' permission"
   },
   "aboutChangelog": {
     "message": "ცვლილებები",
@@ -287,6 +291,10 @@
     "message": "ფილტრის შესაქმნელი ცალკე გარემო",
     "description": "Header for filter-creation section in the dashboard"
   },
+  "sandboxEditorUserScriptsInfo": {
+    "message": "გარეგნული ან სკრიპტული ფილტრების იძულებით ამოქმედებისთვის განცაკლევებული გარემოდან, uBO Lite საჭიროებს მომხმარებლის სკრიპტების გაშვების ნებართვებს.",
+    "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
+  },
   "developerModeLabel": {
     "message": "შემმუშვებლის რეჟიმი",
     "description": "Label for a checkbox in the options page"
@@ -348,7 +356,7 @@
     "description": "A button to navigate to the blocked page"
   },
   "zapperTipEnter": {
-    "message": "ნაწილების ამოჭრის რეჟიმში გადასვლა",
+    "message": "ელემენტის წაშლა",
     "description": "Tooltip for the button used to enter zapper mode"
   },
   "zapperTipQuit": {
