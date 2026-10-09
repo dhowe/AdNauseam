@@ -26,10 +26,9 @@ All external libraries used by AdNauseam can be found on [src/lib](https://githu
 | jQuery.js             | v3.4.1  | 
 | jquery.mousewheel.js  | v3.1.12 |
 | JSZip.js              | v3.1.3  |
-| d3.js                 | v3.4.11 |
+| d3.js                 | v7.9.0  |
 | packery.js            | -       |
 | punycode.js           | v1.3.2  |
-| imagesLoaded          | v3.1.8  |
 | regexanalyzer         | vv1.1.0 |
 | QUnit                 | v2.0.2  |
 | hsluv                 | v0.1.0  |
