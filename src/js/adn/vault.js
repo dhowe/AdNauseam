@@ -97,7 +97,7 @@ onBroadcast(request => {
       lastAdDetectedTime = new Date();
       const brush = document.getElementsByClassName('chart-bg')[0];
       const w = brush ? parseInt(brush.attributes.width.value) : null,
-        sliderPos = gSliderLeft ? parseFloat(/\((.*?),/g.exec(gSliderLeft)[1]) : null;
+        sliderPos = gSliderLeft !== undefined ? gSliderLeft : null;
 
       // only when the slider covers 'now' or when there is no slider (empty vault or one ad)
       if (w - sliderPos <= 1 || sliderPos == 0) setTimeout(autoUpdateVault, 3000);
@@ -1479,7 +1479,8 @@ function zoomOut(immediate) {
   if (zoomIdx < Zooms.length - 1) setZoom(++zoomIdx, immediate);
 }
 
-function setScale(scale, targetPos) {
+// focus: optional screen point {x, y} to zoom around (default: stage center)
+function setScale(scale, targetPos, focus) {
   const s = scale / 100;
   $container.css({ transform: 'scale(' + s + ')' });
   $ratio.text(Math.round(scale) + '%');
@@ -1498,8 +1499,15 @@ function setScale(scale, targetPos) {
 
     $container.data("zoom", scale);
 
-    const offsetLeft = (center - ml) * (1 - zoomProp);
-    const offsetTop = (center - mt) * (1 - zoomProp);
+    let offsetLeft = (center - ml) * (1 - zoomProp);
+    let offsetTop = (center - mt) * (1 - zoomProp);
+
+    if (focus) {
+      // keep the point under the focus fixed: scaling is around the container's center
+      const r = container_div.getBoundingClientRect();
+      offsetLeft = (focus.x - (r.left + r.width / 2)) * (1 - zoomProp);
+      offsetTop = (focus.y - (r.top + r.height / 2)) * (1 - zoomProp);
+    }
 
     marginLeft = (ml + offsetLeft) + "px";
     marginTop = (mt + offsetTop) + "px";
@@ -1508,7 +1516,7 @@ function setScale(scale, targetPos) {
   $container.css({ "margin-left": marginLeft, "margin-top": marginTop });
 }
 
-function dynamicZoom(scaleInterval, targetPos) {
+function dynamicZoom(scaleInterval, targetPos, focus) {
 
   userZoomScale += scaleInterval;
   if (userZoomScale > Zooms[0])
@@ -1516,7 +1524,7 @@ function dynamicZoom(scaleInterval, targetPos) {
   else if (userZoomScale < Zooms[Zooms.length - 1])
     userZoomScale = Zooms[Zooms.length - 1];
 
-  setScale(userZoomScale, targetPos);
+  setScale(userZoomScale, targetPos, focus);
 
   // set zoom-text to 2 decimal places
   $ratio.text(Math.round(userZoomScale * 100) / 100 + '%');
@@ -1759,7 +1767,8 @@ function addInterfaceHandlers(ads) {
     const rawDeltaY = e.deltaY * e.deltaFactor;
     const scale = (Math.abs(rawDeltaY) >= 100) ? rawDeltaY / 100 : rawDeltaY / 10;
 
-    dynamicZoom(scale);
+    // zoom around the mouse position
+    dynamicZoom(scale, undefined, { x: e.clientX, y: e.clientY });
   });
 }
 
@@ -1841,12 +1850,13 @@ function createSlider(mode) {
   let lastBrush = null;
 
   if (mode != undefined && !d3.select('.brush').empty()) {
-    lastBrush = {};
-    lastBrush.w = d3.transform(d3.select(".resize.w").attr("transform")).translate[0];
-    lastBrush.e = d3.transform(d3.select(".resize.e").attr("transform")).translate[0];
-    lastBrush.extentX = d3.select(".extent").attr("x");
-    lastBrush.extentWidth = d3.select(".extent").attr("width");
-    lastBrush.width = d3.select('.chart-bg').attr("width");
+    const sel = d3.brushSelection(d3.select('.brush').node());
+    if (sel) {
+      lastBrush = {};
+      lastBrush.w = sel[0];
+      lastBrush.e = sel[1];
+      lastBrush.width = d3.select('.chart-bg').attr("width");
+    }
   }
 
   // clear all the old svg
@@ -1880,7 +1890,7 @@ function createSlider(mode) {
   });
 
   // mapping the scales
-  const xScale = d3.time.scale()
+  const xScale = d3.scaleTime()
     .domain([minDate, maxDate])
     .range([0, width]);
 
@@ -1889,14 +1899,22 @@ function createSlider(mode) {
     return parseInt(xScale(d.foundTs));
   });
 
-  // setup the histogram layout
-  const histogram = d3.layout.histogram()
-    .bins(400)(map);
+  // setup the histogram layout (400 equal bins, as d3 v3 did)
+  const histogram = d3.bin()
+    .domain([0, width])
+    .thresholds(d3.range(1, 400).map(i => i * width / 400))(map);
+
+  // pick the first format whose test passes (was d3.time.format.multi in v3)
+  const multiFormat = function (formats) {
+    formats = formats.map(f => [d3.timeFormat(f[0]), f[1]]);
+    return function (d) {
+      return formats.find(f => f[1](d))[0](d);
+    };
+  };
 
   // setup the x axis
-  const xAxis = d3.svg.axis()
-    .scale(xScale)
-    .tickFormat(d3.time.format.multi([
+  const xAxis = d3.axisBottom(xScale)
+    .tickFormat(multiFormat([
       [".%L", function (d) {
         return d.getMilliseconds();
       }],
@@ -1944,7 +1962,7 @@ function createSlider(mode) {
     .attr("fill", "#000")
     .attr("fill-opacity", ".5");
 
-  const barw = histogram[0].dx - 1; //relative width
+  const barw = histogram[0].x1 - histogram[0].x0 - 1; //relative width
 
   // Create groups for the bars
   const bars = svg.selectAll(".bar")
@@ -1953,61 +1971,65 @@ function createSlider(mode) {
     .append("g");
 
   // Y scale
-  const yScale = d3.scale.linear()
+  const yScale = d3.scaleLinear()
     .domain([0, d3.max(histogram, function (d) { return d.length; })])
     .range([-2, -46]);
 
   bars.append("line")
     .attr("x1", function (d) {
-      return d.x + barw / 2;
+      return d.x0 + barw / 2;
     })
     .attr("y1", -2)
     .attr("x2", function (d) {
-      return d.x + barw / 2;
+      return d.x0 + barw / 2;
     })
     .attr("y2", function (d) {
-      return yScale(d.y);
+      return yScale(d.length);
     })
     .attr("style", "stroke-width:" + barw + "; stroke-dasharray: 1,0.5; stroke: #999");
 
   // setup the brush
+  // the brush covers the height of the chart
   const bExtent = [computeMinDateFor(gAds, minDate), maxDate],
-    brush = d3.svg.brush()
-      .x(xScale)
-      .extent(bExtent)
-      .on("brushend", brushend);
+    brush = d3.brushX()
+      .extent([[0, -50], [width, -1]])
+      .on("brush", moveHandles)
+      .on("end", brushend);
 
   const gBrush = svg.append("g")
     .attr("class", "brush")
     .call(brush);
 
-  // set the height of the brush to that of the chart
-  gBrush.selectAll(".brush .extent")
-    .attr("height", 49)
-    .attr("y", -50)
+  // clicking the background does not start a new selection (as in v3)
+  gBrush.select(".overlay")
+    .attr("pointer-events", "none");
+
+  gBrush.select(".selection")
     .attr("fill", "#0076FF")
-    .attr("fill-opacity", ".25");
+    .attr("fill-opacity", ".25")
+    .attr("stroke", null);
 
-  // set the height of the brush to that of the chart
-  // gBrush.selectAll("rect")
-  //   .attr("y", -50);
-
-  // attach handle image
-  gBrush.selectAll(".resize").append("image")
-    .attr("xlink:href", "../img/timeline-handle.svg")
+  // attach handle images (dragging is done by the brush's own handles)
+  const handleImgs = gBrush.selectAll(".handle-img")
+    .data(["w", "e"])
+    .enter().append("image")
+    .attr("class", "handle-img")
+    .attr("href", "../img/timeline-handle.svg")
     .attr("width", 5)
     .attr("height", 50)
     .attr("y", -50)
-    .attr("x", -3);
+    .attr("pointer-events", "none");
 
+  // position the slider: last position, or the default extent
+  let bSel = bExtent.map(xScale);
   if (lastBrush && mode != undefined) {
     // map all values if resize
     const r = mode == "resize" ? d3.select('.chart-bg').attr("width") / lastBrush.width : 1;
-    d3.select(".extent").attr("width", lastBrush.extentWidth * r);
-    d3.select(".extent").attr("x", lastBrush.extentX * r);
-    d3.select(".resize.w").attr("transform", "translate(" + lastBrush.w * r + ",0)");
-    d3.select(".resize.e").attr("transform", "translate(" + lastBrush.e * r + ",0)");
+    bSel = [lastBrush.w * r, lastBrush.e * r];
   }
+  // an empty selection would hide the sliders, so use the full width
+  if (bSel[1] - bSel[0] < 1) bSel = [0, width];
+  gBrush.call(brush.move, bSel);
 
   // cases:
   // 1) [default] reload vault: doLayout, update slider - runFilter()
@@ -2043,11 +2065,7 @@ function createSlider(mode) {
     centerContainer();
     gMin = ext[0], gMax = ext[1];
 
-    gSliderRight = d3.select('.w.resize')[0][0].attributes.transform.value;
-    gSliderLeft = d3.select('.e.resize')[0][0].attributes.transform.value;
-
-    // make sure the sliders are always visible
-    if (gMax - gMin <= 0) d3.select('.resize').style("display", "block");
+    [gSliderRight, gSliderLeft] = d3.brushSelection(gBrush.node());
 
     if (gAds.length >= MaxStartNum) {
       uDom("a[class=showing-help]").text("?")
@@ -2112,18 +2130,30 @@ function createSlider(mode) {
     return filtered;
   }
 
-  function brushend() {
+  function moveHandles(event) {
+    if (!event.selection) return;
+    handleImgs.attr("x", (d, i) => event.selection[i] - 3);
+  }
+
+  function brushend(event) {
+    if (!event.sourceEvent) return; // programmatic brush.move
+
+    // collapsed to nothing: put the sliders back where they were
+    if (!event.selection) {
+      gBrush.call(brush.move, [gSliderRight, gSliderLeft]);
+      return;
+    }
+
     const lastgSliderRight = gSliderRight;
     const lastgSliderLeft = gSliderLeft;
-    gSliderRight = d3.select('.w.resize')[0][0].attributes.transform.value;
-    gSliderLeft = d3.select('.e.resize')[0][0].attributes.transform.value;
+    [gSliderRight, gSliderLeft] = event.selection;
 
-    if (!lastgSliderRight || !lastgSliderLeft) return;
+    if (lastgSliderRight === undefined || lastgSliderLeft === undefined) return;
 
     if (gSliderRight === lastgSliderRight && gSliderLeft === lastgSliderLeft) {
       return;
     } else {
-      const filtered = runFilter(d3.event.target.extent());
+      const filtered = runFilter(event.selection.map(xScale.invert));
       filtered && doLayout(filtered);
     }
   }
