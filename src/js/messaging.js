@@ -1099,6 +1099,7 @@ const backupUserData = async function() {
         hostnameSwitchesString: permanentSwitches.toString(),
         userFilters: userFilters.content,
     };
+    userData.userSettings.admap = adnauseam.getAdmap(); // adn: ads left userSettings, see #2536 #2764
 
     const filename = i18n$('aboutBackupFilename')
         .replace('{{datetime}}', µb.dateNowToSensibleString())

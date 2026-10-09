@@ -101,7 +101,7 @@ const userSettingsDefault = {
 
     ////////////////// ADN //////////////////
 
-    admap: {},
+    // admap (ads) is stored under its own key, not with settings, see #2536 #2764 // adn
     devMode: false,
     dntDomains: [],
     parseTextAds: true,

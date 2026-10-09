@@ -105,6 +105,7 @@ const adnauseam = (function () {
   let lastActivity = 0;
   let lastUserActivity = 0;
   let lastStorageUpdate = 0;
+  let adReadFailed = false; // true if the stored vault could not be read, see #2536 #2764
   let xhr, idgen, admap, listsLoaded = false;
   let verifying = false; // true while verifyTarget() is pending for a visit
   let inspected, listEntries, devbuild, adsetSize = 0;
@@ -692,14 +693,16 @@ const adnauseam = (function () {
   }
 
   const storeAdData = function (immediate) {
+    // never overwrite a stored vault we could not read, see #2536 #2764
+    if (adReadFailed) return;
+
     // always update store as long as adsetSize is less than 1000
     if (adsetSize < 1000) immediate = true;
 
     const now = millis();
     // defer if we've recently written and !immediate
     if (immediate || (!immediate && now - lastStorageUpdate > updateStorageInterval)) {
-      vAPI.storage.set({ admap: admap });
-      µb.changeUserSettings('admap', admap); 
+      vAPI.storage.set({ admap: admap }); // ads only, not in userSettings, see #2536 #2764
       lastStorageUpdate = millis();
       //log("--Storage Ad Data--")
     }
@@ -1603,28 +1606,17 @@ const adnauseam = (function () {
     return removed;
   }
 
-  const initUserSettings = async function () {
-    const settings = await vAPI.storage.get(µb.userSettings);
-    // start by grabbing user-settings, then calling initialize()
-
-    // this for backwards compatibility only ---------------------
-    const mapSz = Object.keys(settings.admap).length;
-    if (!mapSz && µb.adnSettings && µb.adnSettings.admap) {// Sally: do we still need this?
-
-      settings.admap = µb.adnSettings.admap;
-
-      log("[IMPORT] Using legacy admap...");
-
-      setTimeout(function () {
-        storeAdData(true);
-      }, 2000);
+  // ads are read on their own, so a bad vault record can no longer reset settings, see #2536 #2764
+  const initAdData = async function () {
+    const ads = await vAPI.storage.get('admap');
+    if (ads === undefined) { // read rejected: keep the stored vault, don't overwrite it
+      adReadFailed = true;
+      err('[INIT] Unable to read stored ads, not saving ads this session');
     }
-    const ads = await vAPI.storage.get("admap");
-    initialize(ads ? ads : settings);
-
+    initialize(ads || {});
   }
 
-  initUserSettings();//
+  initAdData();
 
   //browser.windows not supported for firefox android
   browser.windows && browser.windows.onRemoved.addListener(function (windowId) {
@@ -2007,6 +1999,11 @@ const adnauseam = (function () {
     this.dnt.shutdown();
   };
 
+  // for the backup, ads are no longer part of userSettings, see #2536 #2764
+  exports.getAdmap = function () {
+    return admap;
+  };
+
   exports.deleteAdSet = function (request, pageStore, tabId) {
     request.ids.forEach(deleteAd);
   };
@@ -2360,6 +2357,7 @@ const adnauseam = (function () {
     clearAdmap();
     reloadExtPage('vault.html');
     updateBadges();
+    adReadFailed = false; // user replaced the vault, safe to write again
     storeAdData(true);
     computeNextId();
 
@@ -2428,6 +2426,7 @@ const adnauseam = (function () {
     reloadExtPage('vault.html'); // reload Vault page if open
 
     validateHashes();
+    adReadFailed = false; // user replaced the vault, safe to write again
     storeAdData(true);
 
     return {
