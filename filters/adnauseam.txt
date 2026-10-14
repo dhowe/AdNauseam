@@ -540,6 +540,19 @@ gfp_video_ads/
 
 ||amazon-adsystem.com^$subdocument
 ||www.youtube.com/sw.js$script
+
+# YouTube: block ad requests like uBO; the scriptlets strip the video ads
+# anyway, and letting the ad endpoints answer can stall the player
+||youtube.com/youtubei/v1/player/ad_break
+||youtube.com/get_midroll_
+||youtube.com/pagead/
+||youtube.com/api/stats/ads
+||youtube.com/_get_ads?
+||youtube.com/get_video_info?*adunit
+||googlevideo.com/initplayback?source=youtube&*c=tvhtml5&*oad=$xhr,domain=youtube.com
+*_ad_$media,3p,domain=youtube.com
+||googlesyndication.com^$domain=youtube.com|youtube-nocookie.com
+||doubleclick.net^$domain=youtube.com|youtube-nocookie.com
 #opensubtitles
 opensubtitles.org###fcninnerbox
 ||dc5k8fg5ioc8s.cloudfront.net^
