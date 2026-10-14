@@ -132,7 +132,7 @@ export async function getTroubleshootingInfo(details) {
         config['user rules'] = userRules.length;
     }
     config.rules = enabledRulesets.reduce((a, b) => {
-        return a + rulesetDetails.get(b).rules.total;
+        return a + (rulesetDetails.get(b)?.rules.total || 0); // adn: adn-allow has no ruleset details
     }, 0);
     const defaultRulesets = defaultConfig.rulesets;
     for ( let i = 0; i < enabledRulesets.length; i++ ) {
