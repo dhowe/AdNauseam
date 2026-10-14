@@ -11,7 +11,7 @@
 'use strict';
 
 import { adnauseam } from './core.js';
-import { log, warn, err } from './log.js';
+import { log, warn, err, isEventLogging } from './log.js';
 
 /******************************************************************************/
 
@@ -109,7 +109,8 @@ async function visitAd(ad) {
         parsedTargetUrl: ad.parsedTargetUrl || null,
         pageUrl: ad.pageUrl,
         id: ad.id
-      }
+      },
+      debug: isEventLogging()
     }).catch(e => {
       warn('[ADN Visitor] Message failed:', e);
       return { success: false, error: e.message };

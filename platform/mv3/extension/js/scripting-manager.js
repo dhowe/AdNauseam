@@ -28,6 +28,7 @@ import {
     webextFlavor,
 } from './ext.js';
 import { ubolErr, ubolLog } from './debug.js';
+import { log as adnLog } from './adn/log.js'; // adn
 
 import { fetchJSON } from './fetch.js';
 import { getEnabledRulesetsDetails } from './ruleset-manager.js';
@@ -383,7 +384,7 @@ async function registerAdNauseam(context) {
   ];
 
   if (matches.length === 0) {
-    console.log('[ADN] No matches, skipping registration');
+    adnLog('[ADN] No matches, skipping registration');
     return;
   }
 
@@ -409,7 +410,7 @@ async function registerAdNauseam(context) {
   }
 
   context.toAdd.push(directive);
-  console.log('[ADN] Registering parser');
+  adnLog('[ADN] Registering parser');
 }
 
 /******************************************************************************/

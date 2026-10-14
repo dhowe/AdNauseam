@@ -24,8 +24,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   const target = ad.parsedTargetUrl || ad.targetUrl;
+  const log = msg.debug ? console.log.bind(console) : () => {};
+  const warn = msg.debug ? console.warn.bind(console) : () => {};
 
-  console.log('[ADN Visitor] Visiting:', target);
+  log('[ADN Visitor] Visiting:', target);
 
   const xhr = new XMLHttpRequest();
 
@@ -56,7 +58,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
       }
 
-      console.log('[ADN Visitor] Response:', status, title || '(no title)',
+      log('[ADN Visitor] Response:', status, title || '(no title)',
         'from:', xhr.responseURL || target);
 
       if (status >= 200 && status < 400) {
@@ -76,7 +78,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     };
 
     xhr.onerror = function (e) {
-      console.warn('[ADN Visitor] Error visiting:', target, e);
+      warn('[ADN Visitor] Error visiting:', target, e);
       sendResponse({
         success: false,
         error: 'Network error'
@@ -84,7 +86,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     };
 
     xhr.ontimeout = function () {
-      console.warn('[ADN Visitor] Timeout visiting:', target);
+      warn('[ADN Visitor] Timeout visiting:', target);
       sendResponse({
         success: false,
         error: 'Timeout'
@@ -103,5 +105,3 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // Return true to indicate async sendResponse
   return true;
 });
-
-console.log('[ADN Visitor] Offscreen document ready');

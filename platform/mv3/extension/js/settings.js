@@ -228,6 +228,20 @@ dom.on('#developerMode input[type="checkbox"]', 'change', ev => {
     dom.body.dataset.develop = `${state}`;
 });
 
+// adn: "Debug mode" toggles ADN console logging (adnSettings.eventLogging)
+sendMessage({ what: 'getAdnSettings' }).then(settings => {
+    if ( !settings ) { return; }
+    qs$('#eventLogging input[type="checkbox"]').checked = settings.eventLogging === true;
+});
+
+dom.on('#eventLogging input[type="checkbox"]', 'change', ev => {
+    sendMessage({
+        what: 'setAdnSettings',
+        settings: { eventLogging: ev.target.checked },
+    });
+});
+// adn end
+
 dom.on('section[data-pane="settings"] button:has([data-i18n="backupButton"])', 'click', ( ) => {
     backupSettings();
 });

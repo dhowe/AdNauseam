@@ -13,7 +13,12 @@
   if (window.adnParserInjected) return;
   window.adnParserInjected = true;
   
-  console.log('[ADN Parser] Loaded on:', window.location.hostname);
+  // Logs only when "Debug mode" (adnSettings.eventLogging) is on
+  let debug = false;
+  const debugReady = chrome.storage.local.get('adnSettings').then(data => {
+    debug = data.adnSettings?.eventLogging === true;
+    logP('Loaded on:', window.location.hostname);
+  }).catch(() => {});
   
   const imgSelectors = [
     'img',
@@ -72,6 +77,7 @@
   const imageExtRe = /\.(?:png|jpe?g|gif|webp|avif|svg|bmp|ico)(?:[?#]|$)/i;
 
   function logP(...args) {
+    if (!debug) return;
     console.log('[ADN Parser]', ...args);
   }
 
@@ -685,12 +691,14 @@
   }
 
 
-  // Run on page load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', processElements);
-  } else {
-    processElements();
-  }
+  // Run on page load (once the debug setting is known, so the first scan logs)
+  debugReady.then(() => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', processElements);
+    } else {
+      processElements();
+    }
+  });
   
   // Also run periodically for dynamic content
   pollTimer = setInterval(processElements, 5000);
@@ -706,6 +714,4 @@
     childList: true,
     subtree: true
   });
-  
-  console.log('[ADN Parser] Ready and observing DOM');
 })();

@@ -731,7 +731,7 @@ async function getSettings() {
     clickProbability: 1.0,
     clickOnlyWhenIdleFor: 0,
     parseTextAds: true,
-    eventLogging: true,
+    eventLogging: false,
     disableClickingForDNT: true,
     disableHidingForDNT: true,
     dntDomains: [],

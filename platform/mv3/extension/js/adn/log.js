@@ -23,7 +23,7 @@
 
 'use strict';
 
-let eventLogging = true;
+let eventLogging = false; // "Debug mode" checkbox in the dashboard
 
 // Load logging preference from storage (defensive: chrome may not be available
 // in all contexts, e.g. content scripts loaded before APIs are ready)
@@ -45,8 +45,10 @@ try {
     });
   }
 } catch (e) {
-  // Silently ignore - logging defaults to enabled
+  // Silently ignore - logging defaults to disabled
 }
+
+export const isEventLogging = () => eventLogging;
 
 export const log = function () {
   if (eventLogging) {
