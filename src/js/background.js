@@ -80,6 +80,7 @@ const hiddenSettingsDefault = {
     popupPanelHeightMode: 0,
     popupPanelLockedSections: 0,
     popupPanelOrientation: 'unset',
+    preventPopupWindows: false,
     requestJournalProcessPeriod: 1000,
     requestStatsDisabled: false,
     selfieDelayInSeconds: 53,

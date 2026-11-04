@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>AdNauseam popup preflight test</title>
+<body>
+<h1>Popup preflight</h1>
+<p>Use a test profile with this patched AdNauseam. Set <code>preventPopupWindows true</code>, add the two rules below to My filters, apply, and reload.</p>
+<pre>||popup-preflight.invalid^$popup
+@@||popup-preflight.invalid/allowed$popup</pre>
+<p>The test hostname is reserved and intentionally does not resolve. The page contains no popup-prevention code of its own.</p>
+<button id="blocked">Open blocked destination</button>
+<button id="allowed">Open excepted destination</button>
+<button id="blank">Open blank control</button>
+<p id="result" role="status">Ready.</p>
+<p>Observe the tab strip. Only the blocked destination should be prevented before creation. Close the control windows manually. Repeat with the feature off and the page reloaded to compare existing popup handling.</p>
+<script src="popup-preflight.js"></script>
+</body>
+</html>

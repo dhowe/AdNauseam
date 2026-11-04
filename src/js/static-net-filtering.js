@@ -4478,9 +4478,78 @@ FilterCompiler.prototype.FILTER_UNSUPPORTED = 2;
 /******************************************************************************/
 /******************************************************************************/
 
+// Only retain necessary conditions from an exception. Dropping an unsupported
+// condition broadens the exception (less prevention), never the blocking rule.
+const popupExceptionFromCompiled = function(tokenHash, fdata, party) {
+    const out = { party, patterns: [] };
+    const domainProps = new Set([
+        'initiatorDomains', 'excludedInitiatorDomains',
+        'requestDomains', 'excludedRequestDomains',
+    ]);
+    const collect = args => {
+        const fc = filterClasses[args[0]];
+        if ( fc === FilterCompositeAll ) {
+            for ( const unit of args[1] ) { collect(unit); }
+        } else if ( fc === FilterPatternPlain || fc === FilterPatternPlain1 || fc === FilterPatternPlainX ) {
+            out.patterns.push(restrFromPlainPattern(args[1]));
+        } else if ( fc === FilterPatternGeneric ) {
+            out.patterns.push(restrFromGenericPattern(args[1]));
+        } else if ( fc === FilterRegex ) {
+            out.patterns.push(args[1]);
+        } else if (
+            fc === FilterFromDomainHit || fc === FilterFromDomainMiss ||
+            fc === FilterFromDomainHitSet || fc === FilterFromDomainMissSet ||
+            fc === FilterToDomainHit || fc === FilterToDomainMiss ||
+            fc === FilterToDomainHitSet || fc === FilterToDomainMissSet ||
+            fc === FilterDenyAllow
+        ) {
+            const rule = {};
+            fc.dnrFromCompiled(args, rule);
+            for ( const [ prop, hostnames ] of Object.entries(rule.condition ?? {}) ) {
+                if ( domainProps.has(prop) === false ) { continue; }
+                if ( hostnames.every(hn => /^[\da-z_.-]+$/.test(hn)) === false ) { continue; }
+                out[prop] = hostnames;
+            }
+        }
+    };
+    if ( tokenHash === DOT_TOKEN_HASH ) {
+        out.requestDomains = [ fdata ];
+    } else if ( tokenHash === ANY_TOKEN_HASH || tokenHash === ANY_HTTP_TOKEN_HASH || tokenHash === ANY_HTTPS_TOKEN_HASH ) {
+        if ( /^[\da-z_.-]+$/.test(fdata) ) { out.initiatorDomains = [ fdata ]; }
+        if ( tokenHash === ANY_HTTP_TOKEN_HASH ) { out.patterns.push('^http://'); }
+        if ( tokenHash === ANY_HTTPS_TOKEN_HASH ) { out.patterns.push('^https://'); }
+    } else {
+        collect(fdata);
+    }
+    return out;
+};
+
+const popupHostnameFromCompiled = function(tokenHash, fdata) {
+    if ( tokenHash === DOT_TOKEN_HASH ) { return fdata; }
+    // $important hostname filters are compiled as a conjunction instead of a
+    // hostname dictionary entry. No other conjunction is safe to simplify.
+    if ( filterClasses[fdata[0]] !== FilterCompositeAll ) { return; }
+    let hostname;
+    let anchored = false;
+    for ( const unit of fdata[1] ) {
+        const fc = filterClasses[unit[0]];
+        if ( fc === FilterPatternPlain || fc === FilterPatternPlain1 || fc === FilterPatternPlainX ) {
+            if ( hostname !== undefined ) { return; }
+            hostname = unit[1];
+        } else if ( fc === FilterAnchorHn ) {
+            anchored = true;
+        } else if ( fc !== FilterImportant ) {
+            return;
+        }
+    }
+    if ( anchored && /^[\da-z_-]+(?:\.[\da-z_-]+)+$/.test(hostname) ) {
+        return hostname;
+    }
+};
+
 const StaticNetFilteringEngine = function() {
     this.compilerVersion = '10';
-    this.selfieVersion = '10';
+    this.selfieVersion = '11';
 
     this.MAX_TOKEN_LENGTH = MAX_TOKEN_LENGTH;
     this.optimizeTaskId = undefined;
@@ -4515,6 +4584,7 @@ StaticNetFilteringEngine.prototype.reset = function() {
     this.badFilters.clear();
     this.unitsToOptimize.length = 0;
     this.bitsToBucket.clear();
+    this.popupPreflight = { block: [], allow: [] };
 
     urlTokenizer.resetKnownTokens();
 
@@ -4560,6 +4630,24 @@ StaticNetFilteringEngine.prototype.freeze = function() {
 
         const tokenHash = args[1];
         const fdata = args[2];
+
+        // Behavioral filtering uses an exact type match. Generic network
+        // blocks/exceptions must not become popup rules here.
+        if ( (bits & ~(ALLPARTIES_REALM | BLOCKALLOW_REALM)) === typeNameToTypeValue.popup ) {
+            const party = bits & ALLPARTIES_REALM;
+            if ( (bits & ALLOW_REALM) !== 0 ) {
+                this.popupPreflight.allow.push(popupExceptionFromCompiled(tokenHash, fdata, party));
+            } else {
+                const hostname = popupHostnameFromCompiled(tokenHash, fdata);
+                if ( hostname !== undefined ) {
+                    this.popupPreflight.block.push({
+                        hostname,
+                        party,
+                        important: (bits & IMPORTANT_REALM) !== 0,
+                    });
+                }
+            }
+        }
 
         let iunit = bucket.get(tokenHash) || 0;
 
@@ -5200,6 +5288,7 @@ StaticNetFilteringEngine.prototype.toSelfie = function() {
         bidiTrie: bidiTrie.toSelfie(),
         filterData: filterDataToSelfie(),
         filterRefs: filterRefsToSelfie(),
+        popupPreflight: this.popupPreflight,
     };
 };
 
@@ -5230,6 +5319,7 @@ StaticNetFilteringEngine.prototype.fromSelfie = function(selfie) {
     this.acceptedCount = selfie.acceptedCount;
     this.discardedCount = selfie.discardedCount;
     this.bitsToBucket = selfie.bitsToBucket;
+    this.popupPreflight = selfie.popupPreflight;
     urlTokenizer.fromSelfie(selfie.urlTokenizer);
 
     // If this point is never reached, it means the internal state is

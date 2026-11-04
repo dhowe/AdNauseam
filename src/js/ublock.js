@@ -50,6 +50,7 @@ import {
 } from './adn/notifications.js';
 import contextMenu from './contextmenu.js';
 import cosmeticFilteringEngine from './cosmetic-filtering.js';
+import { createWhitelistMatcher } from './popup-preflight.js';
 import { hostnameFromURI } from './uri-utils.js';
 import { redirectEngine } from './redirect-engine.js';
 
@@ -59,14 +60,8 @@ import { redirectEngine } from './redirect-engine.js';
 // https://github.com/chrisaljoudi/uBlock/issues/405
 // Be more flexible with whitelist syntax
 
-// Any special regexp char will be escaped
-const whitelistDirectiveEscape = /[-/\\^$+?.()|[\]{}]/g;
-
-// All `*` will be expanded into `.*`
-const whitelistDirectiveEscapeAsterisk = /\*/g;
-
-// Remember encountered regexps for reuse.
-const directiveToRegexpMap = new Map();
+const whitelistMatcher = createWhitelistMatcher();
+const { regexpCache: directiveToRegexpMap, matchBucket } = whitelistMatcher;
 
 // Probably manually entered whitelist directive
 const isHandcraftedWhitelistDirective = function(directive) {
@@ -74,64 +69,10 @@ const isHandcraftedWhitelistDirective = function(directive) {
            directive.indexOf('/') !== -1 && directive.indexOf('*') !== -1;
 };
 
-const matchDirective = function(url, hostname, directive) {
-    // Directive is a plain hostname.
-    if ( directive.indexOf('/') === -1 ) {
-        return hostname.endsWith(directive) &&
-              (hostname.length === directive.length ||
-               hostname.charAt(hostname.length - directive.length - 1) === '.');
-    }
-    // Match URL exactly.
-    if (
-        directive.startsWith('/') === false &&
-        directive.indexOf('*') === -1
-    ) {
-        return url === directive;
-    }
-    // Transpose into a regular expression.
-    let re = directiveToRegexpMap.get(directive);
-    if ( re === undefined ) {
-        let reStr;
-        if ( directive.startsWith('/') && directive.endsWith('/') ) {
-            reStr = directive.slice(1, -1);
-        } else {
-            reStr = directive.replace(whitelistDirectiveEscape, '\\$&')
-                             .replace(whitelistDirectiveEscapeAsterisk, '.*');
-        }
-        re = new RegExp(reStr);
-        directiveToRegexpMap.set(directive, re);
-    }
-    return re.test(url);
-};
-
-const matchBucket = function(url, hostname, bucket, start) {
-    if ( bucket ) {
-        for ( let i = start || 0, n = bucket.length; i < n; i++ ) {
-            if ( matchDirective(url, hostname, bucket[i]) ) {
-                return i;
-            }
-        }
-    }
-    return -1;
-};
-
 /******************************************************************************/
 
 µb.getNetFilteringSwitch = function(url) {
-    const hostname = hostnameFromURI(url);
-    let key = hostname;
-    for (;;) {
-        if ( matchBucket(url, hostname, this.netWhitelist.get(key)) !== -1 ) {
-            return false;
-        }
-        const pos = key.indexOf('.');
-        if ( pos === -1 ) { break; }
-        key = key.slice(pos + 1);
-    }
-    if ( matchBucket(url, hostname, this.netWhitelist.get('//')) !== -1 ) {
-        return false;
-    }
-    return true;
+    return whitelistMatcher.matches(this.netWhitelist, url, hostnameFromURI(url)) === false;
 };
 
 /******************************************************************************/

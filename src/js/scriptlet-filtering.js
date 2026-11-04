@@ -22,9 +22,15 @@
 /******************************************************************************/
 
 import {
+    canUsePopupPreflight,
+    createWhitelistMatcher,
+    installPopupPreflight,
+} from './popup-preflight.js';
+import {
     domainFromHostname,
     hostnameFromURI,
 } from './uri-utils.js';
+import { sessionFirewall, sessionURLFiltering } from './filtering-engines.js';
 
 import { MRUCache } from './mrucache.js';
 import { ScriptletFilteringEngine } from './scriptlet-filtering-core.js';
@@ -32,7 +38,7 @@ import { ScriptletFilteringEngine } from './scriptlet-filtering-core.js';
 import logger from './logger.js';
 import { onBroadcast } from './broadcast.js';
 import { redirectEngine as reng } from './redirect-engine.js';
-import { sessionFirewall } from './filtering-engines.js';
+import staticNetFilteringEngine from './static-net-filtering.js';
 import µb from './background.js';
 
 /******************************************************************************/
@@ -196,6 +202,10 @@ export class ScriptletFilteringEngineEx extends ScriptletFilteringEngine {
         this.bc = onBroadcast(msg => {
             switch ( msg.what ) {
             case 'filteringBehaviorChanged': {
+                if ( µb.hiddenSettings.preventPopupWindows ) {
+                    this.clearCache();
+                    break;
+                }
                 const direction = msg.direction || 0;
                 if ( direction > 0 ) { return; }
                 if ( direction >= 0 && msg.hostname ) {
@@ -295,6 +305,29 @@ export class ScriptletFilteringEngineEx extends ScriptletFilteringEngine {
         }
 
         scriptletDetails = super.retrieve(request, options);
+
+        if (
+            µb.hiddenSettings.preventPopupWindows &&
+            canUsePopupPreflight(sessionFirewall, sessionURLFiltering) &&
+            staticNetFilteringEngine.popupPreflight.block.length !== 0 &&
+            scriptletDetails?.filters?.includes('#@#+js()') !== true
+        ) {
+            const preflight = {
+                ...staticNetFilteringEngine.popupPreflight,
+                hostname,
+                domain: request.domain,
+            };
+            const trustedData = Array.from(µb.netWhitelist).filter(a => a[0] !== '#');
+            const code = `try { (${installPopupPreflight.toString()})(` +
+                `${JSON.stringify(preflight)},` +
+                `(${createWhitelistMatcher.toString()})().matches,` +
+                `${JSON.stringify(trustedData)}); } catch {}`;
+            scriptletDetails = {
+                ...scriptletDetails,
+                mainWorld: [ code, scriptletDetails?.mainWorld ?? '' ].join('\n'),
+                filters: scriptletDetails?.filters ?? [],
+            };
+        }
 
         if ( scriptletDetails === undefined ) {
             if ( request.nocache !== true ) {
