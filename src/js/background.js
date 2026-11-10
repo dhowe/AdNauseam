@@ -92,7 +92,7 @@ const hiddenSettingsDefault = {
     userResourcesLocation: 'unset',
     showAdsDebug: false, // Adn set "true" to show ads that can be potentially be collected #2136
     hidingStyleDebug: 'opacity:0!important;pointer-events:none!important;', // Adn style applied to hidden elements when showAdsDebug is true
-    hidingStyleNormal: 'position:absolute!important;left:0!important;right:0!important;opacity:0!important;pointer-events:none!important;', // Adn style applied to hidden elements normally: invisible and out of the flow, but with its natural height and a real width so lazy-loaded ads render and can be collected (no clip: it zeroes IntersectionObserver ratios)
+    hidingStyleNormal: 'position:absolute!important;left:0!important;right:0!important;opacity:0!important;pointer-events:none!important;& *{pointer-events:none!important;}', // Adn style applied to hidden elements normally: invisible and out of the flow, but with its natural height and a real width so lazy-loaded ads render and can be collected (no clip: it zeroes IntersectionObserver ratios); the nested rule stops descendants from re-enabling pointer events (Amazon sponsored widgets)
     costPerClick: 1.03, // Adn https://github.com/dhowe/AdNauseam/issues/2131
     internalLinkDomains: internalLinkDomainsDefault.join(','), // Adn
 };
