@@ -72,8 +72,9 @@ body.busy aside {
     animation-fill-mode: forwards;
     display: block;
 }
-hr {
-    margin: 0.5em 0;
+
+body.nodata .needData {
+    visibility: hidden;
 }
 
 #hostname {
@@ -104,6 +105,10 @@ body[data-forbid~="zapper"][data-forbid~="picker"][data-forbid~="report"] .local
     display: none;
 }
 body[data-forbid~="dashboard"] .globalTools {
+    display: none;
+}
+
+.filteringModeSlider[data-level="0"] ~ .localTools > *:is(#gotoPicker,#gotoUnpicker) {
     display: none;
 }
 

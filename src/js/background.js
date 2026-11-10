@@ -19,6 +19,8 @@
     Home: https://github.com/gorhill/uBlock
 */
 
+/* global browser */
+
 /******************************************************************************/
 
 import {
@@ -29,6 +31,7 @@ import {
 
 import { internalLinkDomainsDefault, enabledBlockListsDefault } from './adn/adn-utils.js'; // adn 
 import { FilteringContext } from './filtering-context.js';
+import { TrustedSiteManager } from './trusted-sites.js';
 import logger from './logger.js';
 import { ubologSet } from './console.js';
 
@@ -63,8 +66,8 @@ const hiddenSettingsDefault = {
     cnameReplayFullURL: false,
     consoleLogLevel: 'unset',
     debugAssetsJson: false,
-    debugScriptlets: false,
-    debugScriptletInjector: false,
+    debugMainScriptlets: false,
+    debugIsolatedScriptlets: false,
     differentialUpdate: true,
     disableWebAssembly: false,
     dnsCacheTTL: 600,
@@ -211,18 +214,16 @@ const µBlock = {  // jshint ignore:line
     canFilterResponseData: typeof browser.webRequest.filterResponseData === 'function',
 
     // https://github.com/chrisaljoudi/uBlock/issues/180
-    // Whitelist directives need to be loaded once the PSL is available
-    netWhitelist: new Map(),
-    netWhitelistModifyTime: 0,
-    netWhitelistDefault: [
+    //   Trusted-site directives need to be loaded once the PSL is available
+    trustedSites: new TrustedSiteManager(),
+    defaultTrustedSiteDirectives: [
         'chrome-extension-scheme',
         'moz-extension-scheme',
     ],
 
     // Adn
     // Strict Block List
-    netStrictBlockList: new Map(),
-    netStrictBlockListModifyTime: 0,
+    strictBlockList: new TrustedSiteManager(),
     /*
     * default strict blocked websites 
     * cases where there isnt a way to collect ads
@@ -331,10 +332,6 @@ const µBlock = {  // jshint ignore:line
     parsedTrustedListPrefixes: [],
     uiAccentStylesheet: '',
 };
-
-µBlock.isReadyPromise = new Promise(resolve => {
-    µBlock.isReadyResolve = resolve;
-});
 
 µBlock.domainFromHostname = domainFromHostname;
 µBlock.hostnameFromURI = hostnameFromURI;

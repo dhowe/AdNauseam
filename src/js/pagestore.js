@@ -570,10 +570,12 @@ const PageStore = class {
         }
     }
 
-    getNetFilteringSwitch() {
-        return µb.tabContextManager
-                 .mustLookup(this.tabId)
-                 .getNetFilteringSwitch();
+    isTrusted() {
+        return this.isNotTrusted() === false;
+    }
+
+    isNotTrusted() {
+        return µb.tabContextManager.mustLookup(this.tabId).isNotTrusted();
     }
 
     /* ADN - Strict Block List Filtering */
@@ -584,14 +586,15 @@ const PageStore = class {
     }
     /* end of ADN */
 
-    toggleNetFilteringSwitch(url, scope, state) {
-        µb.toggleNetFilteringSwitch(url, scope, state);
+    toggleTrustedStatus(url, scope, state) {
+        const r = µb.toggleTrustedStatus(url, scope, state);
+        if ( r === 0 ) { return; }
         this.netFilteringCache.empty();
     }
 
     shouldApplyCosmeticFilters(frameId = 0) {
         if ( this._noCosmeticFiltering === undefined ) {
-            this._noCosmeticFiltering = this.getNetFilteringSwitch() === false;
+            this._noCosmeticFiltering = this.isTrusted();
             if ( this._noCosmeticFiltering === false ) {
                 this._noCosmeticFiltering = sessionSwitches.evaluateZ(
                     'no-cosmetic-filtering',
@@ -777,9 +780,7 @@ const PageStore = class {
         fctxt.filter = undefined;
         fctxt.redirectURL = undefined;
 
-        if ( this.getNetFilteringSwitch(fctxt) === false ) {
-            return 0;
-        }
+        if ( this.isTrusted(fctxt) ) { return 0; }
 
         if (
             fctxt.itype === fctxt.CSP_REPORT &&
@@ -797,7 +798,7 @@ const PageStore = class {
 
         if (
             fctxt.itype === fctxt.SCRIPT &&
-            this.filterScripting(fctxt, true) === 1
+            this.filterScripting(fctxt, false) === 1
         ) {
             return 1;
         }
@@ -924,7 +925,7 @@ const PageStore = class {
     filterOnHeaders(fctxt, ...headers) {
         fctxt.filter = undefined;
 
-        if ( this.getNetFilteringSwitch(fctxt) === false ) { return 0; }
+        if ( this.isTrusted(fctxt) ) { return 0; }
 
         let result = staticNetFilteringEngine.matchHeaders(fctxt, ...headers);
         if ( result === 0 ) { return 0; }
@@ -1046,20 +1047,11 @@ const PageStore = class {
         return 0;
     }
 
-    filterScripting(fctxt, netFiltering) {
+    filterScripting(fctxt, trustedStatus) {
         fctxt.filter = undefined;
-        if ( netFiltering === undefined ) {
-            netFiltering = this.getNetFilteringSwitch(fctxt);
-        }
-        if (
-            netFiltering === false ||
-            sessionSwitches.evaluateZ(
-                'no-scripting',
-                fctxt.getTabHostname()
-            ) === false
-        ) {
-            return 0;
-        }
+        if ( trustedStatus ?? this.isTrusted(fctxt) ) { return 0; }
+        const hn = fctxt.getTabHostname();
+        if ( sessionSwitches.evaluateZ('no-scripting', hn) === false ) { return 0; }
         if ( logger.enabled ) {
             fctxt.filter = sessionSwitches.toLogData();
         }

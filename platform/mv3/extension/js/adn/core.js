@@ -618,25 +618,15 @@ async function adsForPage(pageUrl) {
   await ready();
   const allAds = adlist();
 
-  // First try exact URL match
+  // Ads collected on this exact page URL, as MV2 and the badge count do
   let pageAds = adlist(pageUrl);
-
-  // If no exact match, try matching by hostname
-  if (pageAds.length === 0 && pageUrl) {
-    try {
-      const hostname = new URL(pageUrl).hostname;
-      pageAds = allAds.filter(ad => {
-        try { return new URL(ad.pageUrl).hostname === hostname; }
-        catch { return false; }
-      });
-    } catch {}
-  }
 
   const recent = pageAds.length === 0;
 
-  // If still no page ads, show most recent (like MV2)
+  // if we have no page ads, use the most recent (6), like MV2
+  // avoid sending data for too many ads in messaging
   if (recent) {
-    pageAds = allAds.sort((a, b) => (b.foundTs || 0) - (a.foundTs || 0)).slice(0, 20);
+    pageAds = allAds.sort((a, b) => (b.foundTs || 0) - (a.foundTs || 0)).slice(0, 6);
   }
 
   return {

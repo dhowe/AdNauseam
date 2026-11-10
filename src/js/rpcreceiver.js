@@ -56,7 +56,7 @@ vAPI.rpcReceiver.getScriptTagFilters = function(details) {
     );
     // https://github.com/gorhill/uBlock/issues/838
     // Disable script tag filtering if document URL is whitelisted.
-    if ( r !== undefined && µb.getNetFilteringSwitch(details.rootURL) ) {
+    if ( r !== undefined && µb.isNotTrustedSite(details.rootURL) ) {
         return r;
     }
 };
@@ -83,7 +83,7 @@ vAPI.rpcReceiver.getScriptTagFiltersWithPrefs = function(details) { // not used
         );
         // https://github.com/gorhill/uBlock/issues/838
         // Disable script tag filtering if document URL is whitelisted.
-        if ( r !== undefined && µb.getNetFilteringSwitch(details.rootURL) ) {
+        if ( r !== undefined && µb.isNotTrustedSite(details.rootURL) ) {
             result.filters = r;
         }
     }

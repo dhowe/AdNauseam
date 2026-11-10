@@ -1710,7 +1710,9 @@ const adnauseam = (function () {
     const store = µb.pageStoreFromTabId(request.tabId);
     if (store) {
 
-      store.toggleNetFilteringSwitch(request.url, request.scope, request.state);
+      // request.state: true = enabled, i.e. not a trusted site
+      const trusted = request.state === undefined ? undefined : !request.state;
+      store.toggleTrustedStatus(request.url, request.scope, trusted);
       µb.toggleStrictBlock(request.url, request.scope, false); // adn remove strictBlock
       updateBadges();
 
@@ -1733,7 +1735,7 @@ const adnauseam = (function () {
       // enable strict blocking for the current domain...
       µb.toggleStrictBlock(request.url, request.scope, request.state);
       // and remove the domain from the whitelist if it is there.
-      store.toggleNetFilteringSwitch(request.url, request.scope, true);
+      store.toggleTrustedStatus(request.url, request.scope, false);
       updateBadges();
 
       // close strictblocklist if open (see gh #113)

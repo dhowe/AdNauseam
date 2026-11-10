@@ -24,10 +24,6 @@ import './lib/regexanalyzer/regex.js';
 import * as makeScriptlets from './js/offscreen/make-scriptlets.js';
 
 import {
-    createHash,
-    randomBytes,
-} from 'crypto';
-import {
     dnrRulesetFromRawLists,
     mergeRules,
 } from './js/static-dnr-filtering.js';
@@ -36,6 +32,7 @@ import {
     minimizeRuleset,
 } from './js/ubo-parser.js';
 
+import { builtinScriptlets } from './js/resources/scriptlets.js';
 import { execSync } from 'node:child_process';
 import { fetchList } from './js/offscreen/fetch-list.js';
 import fs from 'fs/promises';
@@ -44,6 +41,7 @@ import { literalStrFromRegex } from './js/offscreen/regex-analyzer.js';
 import { makeCosmeticScripts } from './js/offscreen/make-cosmetic-filters.js';
 import path from 'path';
 import process from 'process';
+import { randomUUID } from 'crypto';
 import redirectResourcesMap from './js/redirect-resources.js';
 import { safeReplace } from './js/offscreen/safe-replace.js';
 
@@ -265,7 +263,7 @@ let networkBad = new Set();
 const secret = await fs.readFile(`${cacheDir}/secret.txt`, {
     encoding: 'utf8'
 }).catch(( ) => {
-    const secret = createHash('sha256').update(randomBytes(16)).digest('hex').slice(0,16);
+    const secret = randomUUID();
     writeFile(`${cacheDir}/secret.txt`, secret);
     return secret;
 });
@@ -966,7 +964,7 @@ async function processScriptletFilters(assetDetails, mapin) {
     const template = await fs.readFile('./js/offscreen/scriptlet.template.js', {
         encoding: 'utf8',
     });
-    const result = makeScriptlets.commit(id, template);
+    const result = makeScriptlets.commit(id, template, secret);
     const stats = {};
     let count = 0;
     if ( result.MAIN ) {
@@ -984,6 +982,26 @@ async function processScriptletFilters(assetDetails, mapin) {
     }
     makeScriptlets.reset();
     return count;
+}
+
+/******************************************************************************/
+
+async function processScriptletFramework() {
+    const beginTemplate = await fs.readFile('./js/offscreen/scriptlet-begin.template.js', {
+        encoding: 'utf8',
+    });
+    const endTemplate = await fs.readFile('./js/offscreen/scriptlet-end.template.js', {
+        encoding: 'utf8',
+    });
+    const result = makeScriptlets.commitFramework(beginTemplate, endTemplate, secret);
+    if ( result.MAIN ) {
+        writeFile(`${scriptletDir}/scriptlet/main/scriptlet-begin.js`, result.MAIN.beginCode);
+        writeFile(`${scriptletDir}/scriptlet/main/scriptlet-end.js`, result.MAIN.endCode);
+    }
+    if ( result.ISOLATED ) {
+        writeFile(`${scriptletDir}/scriptlet/isolated/scriptlet-begin.js`, result.ISOLATED.beginCode);
+        writeFile(`${scriptletDir}/scriptlet/isolated/scriptlet-end.js`, result.ISOLATED.endCode);
+    }
 }
 
 /******************************************************************************/
@@ -1263,6 +1281,24 @@ async function rulesetFromURLs(assetDetails) {
 /******************************************************************************/
 
 async function main() {
+    makeScriptlets.init(builtinScriptlets);
+    // Import scriptlets from web-accessible-resources
+    {
+        const importWAR = (name, details) => {
+            return fs.readFile(`./web_accessible_resources/${name}`, {
+                encoding: 'utf8'
+            }).then(code =>
+                makeScriptlets.importScriptlet({ name, code, ...details })
+            );
+        };
+        const promises = [];
+        for ( const [ name, details ] of redirectResourcesMap ) {
+            if ( name.endsWith('.js') === false ) { continue; }
+            if ( details.data !== 'text' ) { continue; }
+            promises.push(importWAR(name, details));
+        }
+        await Promise.all(promises);
+    }
 
     let version = '';
     {
@@ -1294,6 +1330,7 @@ async function main() {
         ruleResources.push({ id: 'adn-allow', enabled: false, path: `/rulesets/main/adn-allow.json` });
         log(`adn-allow ruleset: ${adnAllowRules.length} total allow rules`, false);
     }
+    processScriptletFramework();
 
     logProgress('');
 

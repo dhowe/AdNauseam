@@ -356,20 +356,33 @@ async function init() {
     currentTab = tab;
     try {
       const url = new URL(tab.url);
-      currentHostname = url.hostname;
+      // Only web pages have a hostname to filter: chrome://extensions would
+      // otherwise yield "extensions"
+      if (/^https?:$/.test(url.protocol)) {
+        currentHostname = url.hostname;
+      }
     } catch {}
   }
 
-  // Get current filtering mode
-  try {
-    const response = await sendMessage({
-      what: 'popupPanelData',
-      hostname: currentHostname,
-    });
-    if (response && response.level !== undefined) {
-      currentLevel = response.level;
-    }
-  } catch {}
+  // AdNauseam doesn't run on browser/extension pages (chrome://, about:,
+  // vault, dashboard...): show it as disabled, with the state buttons locked.
+  // Mirrors renderPage() in MV2 menu.js.
+  if (currentHostname === '') {
+    currentLevel = MODE_NONE;
+    $('#state_btn-wrapper').classList.add('disabled');
+    $$('input[name="state_btn"]').forEach(radio => { radio.disabled = true; });
+  } else {
+    // Get current filtering mode
+    try {
+      const response = await sendMessage({
+        what: 'popupPanelData',
+        hostname: currentHostname,
+      });
+      if (response && response.level !== undefined) {
+        currentLevel = response.level;
+      }
+    } catch {}
+  }
 
   // Set initial state from filtering level; strict overlay takes precedence.
   let state = levelToState[currentLevel] || 'active';

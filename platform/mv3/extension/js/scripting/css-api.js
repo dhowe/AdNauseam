@@ -19,11 +19,18 @@
     Home: https://github.com/gorhill/uBlock
 */
 
+/* global chrome */
+
 (api => {
     if ( typeof api === 'object' ) { return; }
     self.cssAPI = {
-        insert(css) {
+        insert(css, immediate = false) {
             if ( chrome.runtime?.id === undefined ) { return; } // ADN: context invalidated
+            if ( immediate ) {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(css);
+                document.adoptedStyleSheets.push(sheet);
+            }
             chrome.runtime.sendMessage({
                 what: 'insertCSS',
                 css,
