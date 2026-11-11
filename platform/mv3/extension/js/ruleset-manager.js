@@ -563,7 +563,15 @@ async function setAdnStrictSite(hostname, state) {
     } else {
         hostnames.delete(hostname);
     }
-    await localWrite('adnStrictSites', Array.from(hostnames));
+    return setAdnStrictSites(Array.from(hostnames));
+}
+
+// The whole list at once: the dynamic rules are rebuilt a single time
+async function setAdnStrictSites(hostnames) {
+    if ( Array.isArray(hostnames) === false ) { return; }
+    await localWrite('adnStrictSites', hostnames.filter(hn =>
+        typeof hn === 'string' && hn !== '' && hn !== 'all-urls'
+    ));
     return updateAdnStrictRules();
 }
 
@@ -994,6 +1002,7 @@ export {
     getEffectiveUserRules,
     getEnabledRulesetsDetails,
     setAdnStrictSite, // adn
+    setAdnStrictSites, // adn
     setStrictBlockMode,
     updateAdnStrictRules, // adn
     updateSessionRules,

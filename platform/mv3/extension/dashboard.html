@@ -31,6 +31,8 @@
      --><button class="tabButton" type="button" data-pane="settings" data-i18n="settingsPageName" tabindex="0"></button><!--
      --><button class="tabButton" type="button" data-pane="rulesets" data-i18n="aboutFilterLists" tabindex="0"></button><!--
      --><button class="tabButton" type="button" data-pane="filters" data-i18n="customFiltersPageName"tabindex="0"></button><!--
+     --><button class="tabButton" type="button" data-pane="trusted" data-i18n="whitelistPageName" tabindex="0"></button><!-- adn
+     --><button class="tabButton" type="button" data-pane="strict" data-i18n="strictBlockListPageName" tabindex="0"></button><!-- adn
      --><button class="tabButton" type="button" data-pane="develop" data-i18n="developPageName"tabindex="0"></button><!--
      --><button class="tabButton" type="button" data-pane="about" data-i18n="aboutPageName" tabindex="0"></button>
     </nav>
@@ -98,6 +100,33 @@
         <div class="cm-container"></div>
     </aside>
 </section>
+
+<!-- -------- -->
+<!-- adn: trusted sites, see js/adn/trusted-sites.js -->
+<section data-pane="trusted">
+    <div>
+        <p data-i18n="noFilteringModeDescription">_</p>
+        <p><textarea id="trustedSites" spellcheck="false" placeholder="noFilteringModePlaceholder"></textarea></p>
+        <p>
+            <button id="trustedSitesApply" class="preferred iconified" type="button" disabled><span class="fa-icon">save</span><span data-i18n="saveButton">_</span><span class="hover"></span></button>
+            <button id="trustedSitesRevert" class="iconified" type="button" disabled><span class="fa-icon">undo</span><span data-i18n="revertButton">_</span><span class="hover"></span></button>
+        </p>
+    </div>
+</section>
+
+<!-- adn: strict-block list, see js/adn/strict-list.js -->
+<section data-pane="strict">
+    <div>
+        <p data-i18n="adnStrictBlockListDescription">_</p>
+        <p><textarea id="strictSites" spellcheck="false" placeholder="noFilteringModePlaceholder"></textarea></p>
+        <p id="strictSitesError"></p>
+        <p>
+            <button id="strictSitesApply" class="preferred iconified" type="button" disabled><span class="fa-icon">save</span><span data-i18n="saveButton">_</span><span class="hover"></span></button>
+            <button id="strictSitesRevert" class="iconified" type="button" disabled><span class="fa-icon">undo</span><span data-i18n="revertButton">_</span><span class="hover"></span></button>
+        </p>
+    </div>
+</section>
+<!-- adn end -->
 
 <!-- -------- -->
 <section data-pane="develop">
@@ -249,6 +278,8 @@
 <script src="js/settings.js" type="module"></script>
 <script src="js/filter-manager-ui.js" type="module"></script>
 <script src="js/develop.js" type="module"></script>
+<script src="js/adn/trusted-sites.js" type="module"></script><!-- adn -->
+<script src="js/adn/strict-list.js" type="module"></script><!-- adn -->
 
 </body>
 </html>

@@ -280,8 +280,23 @@ export function generateContentFn(trusted, directive) {
         return randomize(len | 0);
     }
     if ( directive.startsWith('war:') ) {
-        // TODO: resources should be fetched by messaging ISOLATED world
-        return '';
+        if ( scriptletGlobals.warOrigin === undefined ) { return ''; }
+        return new Promise(resolve => {
+            const warOrigin = scriptletGlobals.warOrigin;
+            const warName = directive.slice(4);
+            const fullpath = [ warOrigin, '/', warName ];
+            const warSecret = scriptletGlobals.warSecret;
+            if ( warSecret !== undefined ) {
+                fullpath.push('?secret=', warSecret);
+            }
+            const warXHR = new safe.XMLHttpRequest();
+            warXHR.responseType = 'text';
+            warXHR.onloadend = ev => {
+                resolve(ev.target.responseText || '');
+            };
+            safe.XMLHttpRequest_open(warXHR, 'GET', fullpath.join(''));
+            safe.XMLHttpRequest_send(warXHR);
+        }).catch(( ) => '');
     }
     if ( directive.startsWith('join:') ) {
         const parts = directive.slice(7)

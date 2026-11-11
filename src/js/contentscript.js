@@ -467,7 +467,7 @@ vAPI.SafeAnimationFrame = class {
 */
 
 // ADN: Dynamic hiding style based on showAdsDebug and hiddenSettings
-vAPI.hideStyle = 'position:absolute!important;left:0!important;right:0!important;opacity:0!important;pointer-events:none!important;'; // ADN - default (must match hidingStyleNormal), updated when showAdsDebug is fetched
+vAPI.hideStyle = 'position:absolute!important;left:0!important;right:0!important;opacity:0!important;pointer-events:none!important;& *{pointer-events:none!important;}'; // ADN - default (must match hidingStyleNormal), updated when showAdsDebug is fetched
 vAPI.notHideStyle = '/*display:none!important;*/'; // ADN
 vAPI.showAdsDebug = false; // ADN
 

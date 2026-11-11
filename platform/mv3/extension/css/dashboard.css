@@ -37,6 +37,8 @@ nav > .tabButton:hover {
 body[data-pane="settings"] #dashboard-nav .tabButton[data-pane="settings"],
 body[data-pane="rulesets"] #dashboard-nav .tabButton[data-pane="rulesets"],
 body[data-pane="filters"] #dashboard-nav .tabButton[data-pane="filters"],
+body[data-pane="trusted"] #dashboard-nav .tabButton[data-pane="trusted"], /* adn */
+body[data-pane="strict"] #dashboard-nav .tabButton[data-pane="strict"], /* adn */
 body[data-pane="develop"] #dashboard-nav .tabButton[data-pane="develop"],
 body[data-pane="about"] #dashboard-nav .tabButton[data-pane="about"] {
     background-color: var(--dashboard-tab-active-surface);
@@ -64,6 +66,8 @@ body [data-pane-related] {
 body[data-pane="settings"]:not(.busy) > section[data-pane="settings"],
 body[data-pane="rulesets"]:not(.busy) > section[data-pane="rulesets"],
 body[data-pane="filters"]:not(.busy) > section[data-pane="filters"],
+body[data-pane="trusted"]:not(.busy) > section[data-pane="trusted"], /* adn */
+body[data-pane="strict"]:not(.busy) > section[data-pane="strict"], /* adn */
 body[data-pane="develop"]:not(.busy) > section[data-pane="develop"],
 body[data-pane="about"]:not(.busy) > section[data-pane="about"],
 body.busy[data-pane] > section[data-pane="busy"] {

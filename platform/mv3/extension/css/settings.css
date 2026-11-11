@@ -111,6 +111,28 @@ section[data-pane="settings"] p:has(button) {
     gap: 1em;
     }
 
+/* adn: trusted sites and strict-block list panes */
+section[data-pane="trusted"] p:has(button),
+section[data-pane="strict"] p:has(button) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    }
+#trustedSites,
+#strictSites {
+    box-sizing: border-box;
+    height: 60vh;
+    resize: vertical;
+    width: 100%;
+    }
+#strictSitesError {
+    color: var(--info3-ink);
+    }
+#strictSitesError:empty {
+    display: none;
+    }
+/* adn end */
+
 body:not(.committing) #commit-spinner {
     display: none;
     }
