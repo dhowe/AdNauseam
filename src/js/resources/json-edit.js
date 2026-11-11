@@ -254,7 +254,7 @@ function editInboundObjectFn(
     const editObj = obj => {
         let clone;
         try {
-            clone = safe.JSON_parse(safe.JSON_stringify(obj));
+            clone = safe.structuredClone(obj);
         } catch {
         }
         if ( typeof clone !== 'object' || clone === null ) { return; }
@@ -269,9 +269,12 @@ function editInboundObjectFn(
     proxyApplyFn(propChain, function(context) {
         const i = getArgPos(context.callArgs);
         if ( i !== undefined ) {
-            const obj = editObj(context.callArgs[i]);
-            if ( obj ) {
-                context.callArgs[i] = obj;
+            const objBefore = context.callArgs[i];
+            if ( typeof objBefore === 'object' ) {
+                const objAfter = editObj(objBefore);
+                if ( objAfter ) {
+                    context.callArgs[i] = objAfter;
+                }
             }
         }
         return context.reflect();
@@ -744,7 +747,7 @@ registerScriptlet(editElementObject, {
 
 /******************************************************************************/
 /**
- * @scriptlet trusted-element-this-object.js
+ * @scriptlet trusted-edit-element-object.js
  * 
  * @description
  * Edit properties of one or more elements matching a specific selector.
@@ -1215,6 +1218,98 @@ registerScriptlet(jsonEditFetchRequestFn, {
 });
 
 /******************************************************************************/
+/******************************************************************************/
+
+async function editInboundElementFn(
+    trusted = false,
+    propChain = '',
+    argPosRaw = '',
+    selector = '',
+    jsonq = ''
+) {
+    if ( propChain === '' ) { return; }
+    if ( selector === '' ) { return; }
+    const safe = safeSelf();
+    const logPrefix = safe.makeLogPrefix(
+        `${trusted ? 'trusted-' : ''}edit-inbound-element`,
+        propChain, argPosRaw, selector, jsonq
+    );
+    const jsonp = JSONPath.create(jsonq);
+    if ( jsonp.valid === false || jsonp.value !== undefined && trusted !== true ) {
+        return safe.uboLog(logPrefix, 'Bad JSONPath query');
+    }
+    const argPos = parseInt(argPosRaw, 10);
+    const getElem = context => {
+        if ( argPosRaw === 'this' ) { return context.thisArg; }
+        const { callArgs } = context;
+        if ( Array.isArray(callArgs) === false ) { return; }
+        if ( isNaN(argPos) ) { return; }
+        if ( argPos >= 0 ) {
+            if ( callArgs.length <= argPos ) { return; }
+            return callArgs[argPos];
+        }
+        if ( callArgs.length < -argPos ) { return; }
+        return callArgs[callArgs.length + argPos];
+    };
+    const editElem = elem => {
+        if ( elem instanceof Element === false ) { return; }
+        if ( elem.matches(selector) === false ) { return; }
+        elem = jsonp.apply(elem);
+        if ( elem === undefined ) { return; }
+        safe.uboLog(logPrefix, 'Edited');
+    };
+    proxyApplyFn(propChain, function(context) {
+        const elem = getElem(context);
+        if ( elem !== undefined ) {
+            editElem(elem);
+        }
+        return context.reflect();
+    });
+}
+registerScriptlet(editInboundElementFn, {
+    name: 'edit-inbound-element.fn',
+    dependencies: [
+        JSONPath,
+        proxyApplyFn,
+        safeSelf,
+    ],
+});
+
+/******************************************************************************/
+/**
+ * @scriptlet trusted-edit-inbound-element.js
+ * 
+ * @description
+ * Edit properties of an element passed as an argument to a method.
+ * Properties can be assigned new values.
+ * 
+ * @param propChain
+ * Property chain of the method to trap.
+ * 
+ * @param argPos
+ * 0-based position of the argument. Use negative integer for position relative
+ * to the end.
+ * 
+ * @param selector
+ * The selector the element must match for the JSONPath query to be applied.
+ * 
+ * @param jsonq
+ * A uBO-flavored JSONPath query.
+ * 
+ * */
+
+function trustedEditInboundElement(...args) {
+    editInboundElementFn(true, ...args);
+}
+registerScriptlet(trustedEditInboundElement, {
+    name: 'trusted-edit-inbound-element.js',
+    requiresTrust: true,
+    dependencies: [
+        editInboundElementFn,
+    ],
+});
+
+/******************************************************************************/
 /**
  * @scriptlet json-edit-fetch-request.js
  * 
@@ -1270,14 +1365,20 @@ registerScriptlet(trustedJsonEditFetchRequest, {
 /******************************************************************************/
 /******************************************************************************/
 
-function jsonlEditFn(jsonp, text = '') {
+function jsonlEditFn(jsonp, text = '', jsonExtract) {
     const safe = safeSelf();
     const lineSeparator = /\r?\n/.exec(text)?.[0] || '\n';
     const linesBefore = text.split('\n');
     const linesAfter = [];
     for ( const lineBefore of linesBefore ) {
+        const match = jsonExtract.exec(lineBefore);
+        if ( match === null ) {
+            linesAfter.push(lineBefore);
+            continue;
+        }
+        const jsonBefore = match[1];
         let obj;
-        try { obj = safe.JSON_parse(lineBefore); } catch { }
+        try { obj = safe.JSON_parse(jsonBefore); } catch { }
         if ( typeof obj !== 'object' || obj === null ) {
             linesAfter.push(lineBefore);
             continue;
@@ -1287,7 +1388,12 @@ function jsonlEditFn(jsonp, text = '') {
             linesAfter.push(lineBefore);
             continue;
         }
-        const lineAfter = safe.JSON_stringify(objAfter);
+        const jsonAfter = safe.JSON_stringify(objAfter);
+        const lineAfter = [
+            lineBefore.slice(0, match.index),
+            jsonAfter,
+            lineBefore.slice(match.index + jsonBefore.length),
+        ].join('');
         linesAfter.push(lineAfter);
     }
     return linesAfter.join(lineSeparator);
@@ -1315,6 +1421,9 @@ function jsonlEditXhrResponseFn(trusted, jsonq = '', ...varargs) {
     }
     const extraArgs = safe.parseVarargs(varargs);
     const propNeedles = parsePropertiesToMatchFn(extraArgs.propsToMatch, 'url');
+    const jsonExtract = extraArgs.jsonExtract
+        ? new RegExp(extraArgs.jsonExtract)
+        : /^(.*)$/;
     self.XMLHttpRequest = class extends self.XMLHttpRequest {
         open(method, url, ...args) {
             const xhrDetails = { method, url };
@@ -1347,7 +1456,7 @@ function jsonlEditXhrResponseFn(trusted, jsonq = '', ...varargs) {
             if ( typeof innerResponse !== 'string' ) {
                 return (xhrDetails.response = innerResponse);
             }
-            const outerResponse = jsonlEditFn(jsonp, innerResponse);
+            const outerResponse = jsonlEditFn(jsonp, innerResponse, jsonExtract);
             if ( outerResponse !== innerResponse ) {
                 safe.uboLog(logPrefix, 'Pruned');
             }
@@ -1442,6 +1551,9 @@ function jsonlEditFetchResponseFn(trusted, jsonq = '', ...varargs) {
     }
     const extraArgs = safe.parseVarargs(varargs);
     const propNeedles = parsePropertiesToMatchFn(extraArgs.propsToMatch, 'url');
+    const jsonExtract = extraArgs.jsonExtract
+        ? new RegExp(extraArgs.jsonExtract)
+        : /^(.*)$/;
     const logall = jsonq === '';
     proxyApplyFn('fetch', function(context) {
         const args = context.callArgs;
@@ -1462,7 +1574,7 @@ function jsonlEditFetchResponseFn(trusted, jsonq = '', ...varargs) {
                     safe.uboLog(logPrefix, textBefore);
                     return responseBefore;
                 }
-                const textAfter = jsonlEditFn(jsonp, textBefore);
+                const textAfter = jsonlEditFn(jsonp, textBefore, jsonExtract);
                 if ( textAfter === textBefore ) { return responseBefore; }
                 safe.uboLog(logPrefix, 'Pruned');
                 const responseAfter = new Response(textAfter, {

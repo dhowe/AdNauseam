@@ -23,6 +23,7 @@
 
 'use strict';
 
+import { TrustedSiteParser } from '../trusted-sites.js';
 import { i18n$ } from '../i18n.js';
 import uDom from './uDom.js';
 
@@ -45,16 +46,13 @@ CodeMirror.defineMode("ubo-whitelist-directives", function() {
         token: function(stream) {
             const line = stream.string.trim();
             stream.skipToEnd();
-            if ( reBadHostname === undefined ) {
-                return null;
-            }
             if ( reComment.test(line) ) {
                 return strictBlockListDefaultSet.has(directiveFromLine(line))
                     ? 'keyword comment'
                     : 'comment';
             }
             if ( line.indexOf('/') === -1 ) {
-                if ( reBadHostname.test(line) ) { return 'error'; }
+                if ( TrustedSiteParser.isBadHostname(line) ) { return 'error'; }
                 if ( strictBlockListDefaultSet.has(line.trim()) ) {
                     return 'keyword';
                 }
@@ -68,7 +66,7 @@ CodeMirror.defineMode("ubo-whitelist-directives", function() {
                 }
                 return null;
             }
-            if ( reHostnameExtractor.test(line) === false ) {
+            if ( TrustedSiteParser.parseDirective(line) === undefined ) {
                 return 'error';
             }
             if ( strictBlockListDefaultSet.has(line.trim()) ) {
@@ -79,8 +77,6 @@ CodeMirror.defineMode("ubo-whitelist-directives", function() {
     };
 });
 
-let reBadHostname;
-let reHostnameExtractor;
 let strictBlockListDefaultSet = new Set();
 
 /******************************************************************************/
@@ -129,15 +125,11 @@ cmEditor.on('changes', strictBlockListChanged);
 
 /******************************************************************************/
 
-const renderStrictBlockList = async function() {
+const renderStrictBlockList = async function(first = false) {
     const details = await messaging.send('dashboard', {
         what: 'getStrictBlockList',
     });
-
-    const first = reBadHostname === undefined;
     if ( first ) {
-        reBadHostname = new RegExp(details.reBadHostname);
-        reHostnameExtractor = new RegExp(details.reHostnameExtractor);
         strictBlockListDefaultSet = new Set(details.strictBlockListDefault);
     }
     const toAdd = new Set(strictBlockListDefaultSet);
@@ -260,6 +252,6 @@ uDom('#exportStrictBlockListToFile').on('click', exportStrictBlockListToFile);
 uDom('#strictBlockListApply').on('click', ( ) => { applyChanges(); });
 uDom('#strictBlockListRevert').on('click', revertChanges);
 
-renderStrictBlockList();
+renderStrictBlockList(true);
 
 /******************************************************************************/

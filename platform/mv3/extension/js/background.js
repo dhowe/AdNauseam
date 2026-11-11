@@ -41,6 +41,7 @@ import {
     getSandboxFilters,
     hasCustomFilters,
     injectCustomFilters,
+    moveManagedCustomScriptlets,
     removeAllCustomFilters,
     removeCustomFilters,
     setSandboxFilters,
@@ -65,7 +66,7 @@ import {
     broadcastMessage,
     hostnameFromMatch,
     hostnamesFromMatches,
-    isScriptlet,
+    intFromVersion,
 } from './utils.js';
 
 import {
@@ -264,28 +265,35 @@ async function onPermissionsAdded(permissions) {
     const details = pendingPermissionRequest;
     pendingPermissionRequest = undefined;
     const { origins = [] } = permissions;
-    return details !== undefined
-        ? onPermissionGrantedThruExtension(details, origins)
-        : onPermissionGrantedThruBrowser(origins);
+    if ( details !== undefined ) {
+        const hostnames = hostnamesFromMatches(origins);
+        if ( hostnames.includes(details.hostname) ) {
+            return onPermissionGrantedThruExtension(details, origins);
+        }
+    }
+    return onPermissionGrantedThruBrowser(origins);
 }
 
 async function onPermissionsRemoved() {
     const modified = await syncWithBrowserPermissions();
     if ( modified === false ) { return false; }
-    registerContentScripts();
+    await registerContentScripts();
     return true;
 }
 
 async function onPermissionsChanged(op, permissions) {
     await isFullyInitialized;
-    const { pending } = onPermissionsChanged;
-    await Promise.all(pending);
-    const promise = op === 'removed'
-        ? onPermissionsRemoved()
-        : onPermissionsAdded(permissions);
-    pending.push(promise);
+    const promise = onPermissionsChanged.pending.then(( ) =>
+        op === 'removed'
+            ? onPermissionsRemoved()
+            : onPermissionsAdded(permissions)
+    );
+    onPermissionsChanged.pending = promise.catch(reason => {
+        ubolErr(`onPermissionsChanged/${reason}`);
+    });
+    return promise;
 }
-onPermissionsChanged.pending = [];
+onPermissionsChanged.pending = Promise.resolve();
 
 /******************************************************************************/
 
@@ -363,7 +371,7 @@ async function onMessage(request, sender) {
             origin: 'USER',
             target: { tabId, frameIds: [ frameId ] },
         }).catch(reason => {
-            ubolErr(`insertCSS/${reason}`);
+            ubolLog(`insertCSS/${reason}`);
         });
 
     case 'removeCSS':
@@ -375,7 +383,7 @@ async function onMessage(request, sender) {
             origin: 'USER',
             target: { tabId, frameIds: [ frameId ] },
         }).catch(reason => {
-            ubolErr(`removeCSS/${reason}`);
+            ubolLog(`removeCSS/${reason}`);
         });
 
     case 'injectCSSProceduralAPI':
@@ -384,7 +392,7 @@ async function onMessage(request, sender) {
             target: { tabId, frameIds: [ frameId ] },
             injectImmediately: true,
         }).catch(reason => {
-            ubolErr(`executeScript/${reason}`);
+            ubolLog(`executeScript/${reason}`);
         });
 
 		// start of ADN cases
@@ -583,6 +591,12 @@ async function onMessage(request, sender) {
     case 'injectCustomFilters':
         if ( frameId === false ) { return; }
         return injectCustomFilters(tabId, frameId, request.hostname);
+
+    case 'getToolOverlaySecret':
+        if ( onMessage.toolOverlaySecret === undefined ) {
+            onMessage.toolOverlaySecret = self.crypto.randomUUID();
+        }
+        return onMessage.toolOverlaySecret;
 
     default:
         break;
@@ -800,46 +814,22 @@ async function onMessage(request, sender) {
     case 'addCustomFilters': {
         const modified = await addCustomFilters(request.hostname, request.selectors);
         if ( modified !== true ) { return; }
-        const hasScriptletFilters = request.selectors.some(a => isScriptlet(a));
-        const hasPlainFilters = request.selectors.some(a => isScriptlet(a) === false);
-        const promises = [];
-        if ( hasPlainFilters ) {
-            promises.push(registerContentScripts());
-        }
-        if ( hasScriptletFilters ) {
-            promises.push(
-                updateCompiledFilters().then(( ) => registerUserScripts())
-            );
-        }
-        await Promise.all(promises);
+        await registerContentScripts();
         return;
     }
 
     case 'addManyCustomFilters': {
         const promises = [];
-        let hasScriptletFilters = false;
-        let hasPlainFilters = false;
         for ( const [ hostname, selectors ] of request.entries ) {
             if ( typeof hostname !== 'string' ) { continue; }
             if ( hostname === '' ) { continue; }
             if ( Array.isArray(selectors) === false ) { continue; }
             if ( selectors.length === 0 ) { continue; }
-            hasScriptletFilters ||= selectors.some(a => isScriptlet(a));
-            hasPlainFilters ||= selectors.some(a => isScriptlet(a) === false);
             promises.push(addCustomFilters(hostname, selectors));
         }
         const results = await Promise.all(promises);
         if ( results.some(a => a) === false ) { return; }
-        promises.length = 0;
-        if ( hasPlainFilters ) {
-            promises.push(registerContentScripts());
-        }
-        if ( hasScriptletFilters ) {
-            promises.push(
-                updateCompiledFilters().then(( ) => registerUserScripts())
-            );
-        }
-        await Promise.all(promises);
+        await registerContentScripts();
         return;
     }
 
@@ -847,18 +837,7 @@ async function onMessage(request, sender) {
         const { selectors } = request;
         const modified = await removeCustomFilters(request.hostname, selectors);
         if ( modified !== true ) { return; }
-        const hasScriptletFilters = selectors.some(a => isScriptlet(a));
-        const hasPlainFilters = selectors.some(a => isScriptlet(a) === false);
-        const promises = [];
-        if ( hasPlainFilters ) {
-            promises.push(registerContentScripts());
-        }
-        if ( hasScriptletFilters ) {
-            promises.push(
-                updateCompiledFilters().then(( ) => registerUserScripts())
-            );
-        }
-        await Promise.all(promises);
+        await registerContentScripts();
         return;
     }
 
@@ -975,6 +954,12 @@ async function startSession() {
     // obsolete ruleset to remove.
     if ( isNewVersion ) {
         ubolLog(`Version change: ${rulesetConfig.version} => ${currentVersion}`);
+        if ( intFromVersion(rulesetConfig.version) <= intFromVersion('2026.914.1325') ) {
+            const modified = await moveManagedCustomScriptlets();
+            if ( modified ) {
+                deferredTasks.add('registerContentScripts');
+            }
+        }
         rulesetConfig.version = currentVersion;
         await patchDefaultRulesets();
         saveRulesetConfig();
@@ -1011,9 +996,10 @@ async function startSession() {
 
     // Toggling "user scripts" permission doesn't cause a permissions change
     // event.
-    const userScriptsChanged = supportsUserScripts() !== rulesetConfig.userScripts;
+    const userScripts = supportsUserScripts();
+    const userScriptsChanged = userScripts !== rulesetConfig.userScripts;
     if ( userScriptsChanged ) {
-        rulesetConfig.userScripts = !rulesetConfig.userScripts;
+        rulesetConfig.userScripts = userScripts;
         saveRulesetConfig();
     }
 

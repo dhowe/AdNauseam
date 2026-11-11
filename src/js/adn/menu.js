@@ -467,7 +467,7 @@ import { broadcast, onBroadcast } from '../broadcast.js';
 
   // check if current page/domain is whitelisted
   const getIsDisabled = function () {
-    return popupData.pageURL === '' || !popupData.netFilteringSwitch ||
+    return popupData.pageURL === '' || popupData.isTrustedSite ||
       (popupData.pageHostname === 'behind-the-scene' && !popupData.advancedUserEnabled);
   }
 

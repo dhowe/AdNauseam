@@ -63,6 +63,10 @@
     "message": "Менш",
     "description": "Label to be used to hide popup panel sections"
   },
+  "popupNoWebsite": {
+    "message": "не вэб-сайт",
+    "description": "Used when popup panel is opened for a local web page"
+  },
   "3pGroupDefault": {
     "message": "Прадвызначана",
     "description": "Header for a ruleset section in 'Filter lists pane'"
@@ -104,7 +108,7 @@
     "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "customListImportUserScriptsInfo": {
-    "message": "To enforce cosmetic or scriptlet filters from imported lists, you must grant uBO Lite permission to run user scripts.",
+    "message": "Каб прымяніць касметычныя фільтры або скрыптлеты да імпартаваных спісах, вы павінны даць uBO Lite дазвол на запуск карыстацкіх сцэнарыяў.",
     "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
   },
   "customFiltersImportExportLabel": {
@@ -292,7 +296,7 @@
     "description": "Header for filter-creation section in the dashboard"
   },
   "sandboxEditorUserScriptsInfo": {
-    "message": "To enforce cosmetic or scriptlet filters from the sandbox, you must grant uBO Lite permission to run user scripts.",
+    "message": "Каб прымяніць касметычныя фільтры або скрыптлеты з ізаляванай асяроддзя, вы павінны даць uBO Lite дазвол на запуск карыстацкіх сцэнарыяў.",
     "description": "A notice to inform user that the enforcement of some filters requires permission to execute 'user scripts'"
   },
   "developerModeLabel": {
@@ -376,7 +380,7 @@
     "description": "A label of a dropdown list"
   },
   "developOptionFilteringModeDetails": {
-    "message": "Падрабязныя звесткі аб рэжыме фільтрацыі",
+    "message": "Падрабязныя звесткі аб рэжыме фільтравання",
     "description": "An option in a dropdown list"
   },
   "developOptionCustomDnrRules": {

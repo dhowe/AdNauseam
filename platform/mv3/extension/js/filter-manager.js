@@ -29,7 +29,6 @@ import {
 
 import {
     intersectHostnameIters,
-    isScriptlet,
     matchesFromHostnames,
     subtractHostnameIters,
 } from './utils.js';
@@ -40,7 +39,7 @@ import { adnHideStyle } from './adn/hide-style.js'; // adn
 /******************************************************************************/
 
 const isProcedural = a => a.startsWith('{');
-const isCSS = a => isProcedural(a) === false && isScriptlet(a) === false;
+const isCSS = a => isProcedural(a) === false;
 
 /******************************************************************************/
 
@@ -113,6 +112,38 @@ export async function getAllCustomFilters() {
     const keys = await getAllCustomFilterKeys();
     const promises = keys.map(k => collect(k));
     return Promise.all(promises);
+}
+
+/******************************************************************************/
+
+export async function moveManagedCustomScriptlets() {
+    const customFilters = await getAllCustomFilters();
+    const scriptletFilters = [];
+    const promises = [];
+    for ( const [ hn, beforeSelectors ] of customFilters ) {
+        const afterSelectors = [];
+        for ( const selector of beforeSelectors ) {
+            if ( selector.startsWith('+js') ) {
+                scriptletFilters.push(`${hn}##${selector}`);
+            } else {
+                afterSelectors.push(selector);
+            }
+        }
+        if ( afterSelectors.length ) {
+            promises.push(localWrite(`site.${hn}`, afterSelectors));
+        } else {
+            promises.push(localRemove(`site.${hn}`));
+        }
+    }
+    if ( scriptletFilters.length ) {
+        const sandboxFilters = await localRead('sandboxFilters') ?? '';
+        if ( sandboxFilters !== '' ) {
+            scriptletFilters.push('', sandboxFilters);
+        }
+        promises.push(localWrite('sandboxFilters', scriptletFilters.join('\n')));
+    }
+    await Promise.all(promises);
+    return scriptletFilters.length !== 0;
 }
 
 /******************************************************************************/

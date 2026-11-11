@@ -102,6 +102,12 @@ cp "$ADN_DIR"/src/js/i18n.js "$ADNL_DIR"/js/
 cp "$ADN_DIR"/src/js/jsonpath.js "$ADNL_DIR"/js/
 cp "$ADN_DIR"/src/js/redirect-resources.js "$ADNL_DIR"/js/
 cp "$ADN_DIR"/src/js/regex-analyzer.js "$ADNL_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/make-scriptlets.js "$ADNL_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/make-utils.js "$ADNL_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/safe-replace.js "$ADNL_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/scriptlet-begin.template.js "$ADNL_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/scriptlet.template.js "$ADNL_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/scriptlet-end.template.js "$ADNL_DIR"/js/offscreen/
 cp "$ADN_DIR"/src/js/trusted-tokens.js "$ADNL_DIR"/js/
 cp -R "$ADN_DIR"/src/js/resources "$ADNL_DIR"/js/
 cp "$ADN_DIR"/src/js/static-filtering-parser.js "$ADNL_DIR"/js/
@@ -223,11 +229,18 @@ cp platform/mv3/extension/js/ubo-parser.js "$UBOL_BUILD_DIR"/js/
 cp platform/mv3/extension/js/utils.js "$UBOL_BUILD_DIR"/js/
 cp "$ADN_DIR"/src/lib/punycode.js "$UBOL_BUILD_DIR"/js/   # needed by ubo-parser.js (as upstream make-mv3.sh)
 cp -R "$ADN_DIR"/src/lib/regexanalyzer "$UBOL_BUILD_DIR"/js/
+cp "$ADN_DIR"/src/js/publicsuffix.js "$UBOL_BUILD_DIR"/js/
 cp -R "$ADN_DIR"/src/js/resources "$UBOL_BUILD_DIR"/js/
 cp "$ADN_DIR"/src/js/trusted-tokens.js "$UBOL_BUILD_DIR"/js/
 cp -R platform/mv3/scriptlets "$UBOL_BUILD_DIR"/
 cp -R platform/mv3/extension/js/offscreen "$UBOL_BUILD_DIR"/js/
 cp "$ADN_DIR"/src/js/regex-analyzer.js "$UBOL_BUILD_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/make-scriptlets.js "$UBOL_BUILD_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/make-utils.js "$UBOL_BUILD_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/safe-replace.js "$UBOL_BUILD_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/scriptlet.template.js "$UBOL_BUILD_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/scriptlet-begin.template.js "$UBOL_BUILD_DIR"/js/offscreen/
+cp "$ADN_DIR"/src/js/scriptlet-end.template.js "$UBOL_BUILD_DIR"/js/offscreen/
 mkdir -p "$UBOL_BUILD_DIR"/web_accessible_resources
 cp "$ADN_DIR"/src/web_accessible_resources/* "$UBOL_BUILD_DIR"/web_accessible_resources/
 cp -R platform/mv3/"$PLATFORM" "$UBOL_BUILD_DIR"/

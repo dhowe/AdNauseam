@@ -63,6 +63,10 @@
     "message": "Moins",
     "description": "Label to be used to hide popup panel sections"
   },
+  "popupNoWebsite": {
+    "message": "pas un site Web",
+    "description": "Used when popup panel is opened for a local web page"
+  },
   "3pGroupDefault": {
     "message": "Par défaut",
     "description": "Header for a ruleset section in 'Filter lists pane'"
@@ -112,7 +116,7 @@
     "description": "Text label heading the import/export area of custom filters"
   },
   "customFiltersImportTextareaPlaceholder": {
-    "message": "Filtres cosmétiques/scriptlets spécifiques à ajouter",
+    "message": "Filtres cosmétiques spécifiques à ajouter",
     "description": "Placeholder text which describes the purpose of the textarea widget"
   },
   "userScriptsInfo": {

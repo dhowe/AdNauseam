@@ -1287,8 +1287,12 @@ let pickerBootArgs;
 let pickerFramePort = null;
 
 const bootstrap = async ( ) => {
+    const pickerPassword = await vAPI.messaging.send('elementPicker', {
+        what: 'elementPickerPassword'
+    });
+    if ( typeof pickerPassword !== 'string' ) { return; }
     pickerBootArgs = await vAPI.messaging.send('elementPicker', {
-        what: 'elementPickerArguments',
+        what: 'elementPickerArguments'
     });
     if ( typeof pickerBootArgs !== 'object' ) { return; }
     if ( pickerBootArgs === null ) { return; }
@@ -1307,21 +1311,23 @@ const bootstrap = async ( ) => {
         iframe.setAttribute(pickerUniqueId, '');
         document.documentElement.append(iframe);
         iframe.addEventListener('load', ( ) => {
-            iframe.setAttribute(`${pickerUniqueId}-loaded`, '');
-            const channel = new MessageChannel();
-            pickerFramePort = channel.port1;
-            pickerFramePort.onmessage = ev => {
-                onDialogMessage(ev.data || {});
-            };
-            pickerFramePort.onmessageerror = ( ) => {
-                quitPicker();
-            };
-            iframe.contentWindow.postMessage(
-                { what: 'epickerStart' },
-                url.href,
-                [ channel.port2 ]
-            );
-            resolve(iframe);
+            self.requestAnimationFrame(( ) => {
+                iframe.setAttribute(`${pickerUniqueId}-loaded`, '');
+                const channel = new MessageChannel();
+                pickerFramePort = channel.port1;
+                pickerFramePort.onmessage = ev => {
+                    onDialogMessage(ev.data || {});
+                };
+                pickerFramePort.onmessageerror = ( ) => {
+                    quitPicker();
+                };
+                iframe.contentWindow.postMessage(
+                    { what: 'epickerStart', password: pickerPassword },
+                    url.href,
+                    [ channel.port2 ]
+                );
+                resolve(iframe);
+            });
         }, { once: true });
         iframe.contentWindow.location = url.href;
     });

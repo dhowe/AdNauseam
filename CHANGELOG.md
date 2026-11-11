@@ -1,4 +1,3 @@
-- [Avoid use of potentially tainted XHR methods in scriptlets](https://github.com/gorhill/uBlock/commit/9a083e7e54)
 
 ----------
 
