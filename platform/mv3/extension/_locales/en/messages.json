@@ -462,5 +462,9 @@
   "unpickerUsage": {
     "message": "Select a filter below to highlight matching elements in the web page. Click the trash can to remove a filter.",
     "description": "Summary description on how to use the tool to remove custom filters"
+  },
+  "adnStrictBlockListDescriptionLite": {
+    "message": "The strict-block list serves to help the users to strict-block specific domains more easily.",
+    "description": "adn: description on the strict-block list tab of the dashboard; domains only, unlike MV2's adnStrictBlockListDescription"
   }
 }
