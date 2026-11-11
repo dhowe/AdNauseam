@@ -97,6 +97,7 @@ import {
     getRulesetRules,
     patchDefaultRulesets,
     setAdnStrictSite, // adn
+    setAdnStrictSites, // adn
     setStrictBlockMode,
     updateAdnStrictRules, // adn
     updateDynamicAndSessionRules,
@@ -539,6 +540,17 @@ async function onMessage(request, sender) {
 		case 'getAdnStrict': {
 			const sites = await getAdnStrictSites();
 			return { enabled: sites.includes(request.hostname) };
+		}
+
+		// The whole strict list, for the dashboard
+		case 'getAdnStrictSites': {
+			return { hostnames: await getAdnStrictSites() };
+		}
+
+		case 'setAdnStrictSites': {
+			const result = await setAdnStrictSites(request.hostnames);
+			updateStrictToolbarIcons();
+			return { hostnames: await getAdnStrictSites(), error: result?.error };
 		}
 		// end of ADN cases
     default:
