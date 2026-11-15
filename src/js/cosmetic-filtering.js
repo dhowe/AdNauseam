@@ -33,8 +33,8 @@ import adnauseam from './adn/core.js'
 /******************************************************************************/
 
 //const hidingStyle = 'opacity:0!important;height:1px!important;width:1px!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important;position:absolute!important;';
-// ADN: Dynamic hiding style based on showAdsDebug and hiddenSettings
-const getHidingStyle = () => µb.hiddenSettings.showAdsDebug ? µb.hiddenSettings.hidingStyleDebug : µb.hiddenSettings.hidingStyleNormal; // Adn
+// ADN: Dynamic hiding style based on strict blocking and hiddenSettings
+const getHidingStyle = tabId => µb.getHidingStyle(tabId); // Adn
 
 //ADN google adsense collection
 //ublock also added something similar to address google ads at src/web_accessible_resources/googlesyndication_adsbygoogle.js
@@ -659,7 +659,7 @@ CosmeticFilteringEngine.prototype.disableSurveyor = function(details) {
 
 /******************************************************************************/
 
-CosmeticFilteringEngine.prototype.cssRuleFromProcedural = function(pfilter) {
+CosmeticFilteringEngine.prototype.cssRuleFromProcedural = function(pfilter, tabId) { // adn
     if ( pfilter.cssable !== true ) { return; }
     const { tasks, action } = pfilter;
     let mq, selector;
@@ -683,7 +683,7 @@ CosmeticFilteringEngine.prototype.cssRuleFromProcedural = function(pfilter) {
         return `${selector}\n{${style}}`;
     }
     if ( style === undefined ) {
-        return `@media ${mq} {\n${selector}\n{${getHidingStyle()}}\n}`;
+        return `@media ${mq} {\n${selector}\n{${getHidingStyle(tabId)}}\n}`; // adn
     }
     return `@media ${mq} {\n${selector}\n{${style}}\n}`;
 };
@@ -739,7 +739,7 @@ CosmeticFilteringEngine.prototype.retrieveGenericSelectors = function(request) {
 
     if ( selectors.length === 0 ) { return out; }
     
-		out.injectedCSS = `${selectors.join(',\n')}\n{${getHidingStyle()}}`;
+		out.injectedCSS = `${selectors.join(',\n')}\n{${getHidingStyle(request.tabId)}}`; // adn
     if (!adnauseam.contentPrefs(request.hostname).hidingDisabled) { // ADN Don't inject user stylesheets if hiding is disabled
 				vAPI.tabs.insertCSS(request.tabId, {
 						code: out.injectedCSS,
@@ -830,7 +830,7 @@ CosmeticFilteringEngine.prototype.retrieveSpecificSelectors = function(
 
         if ( specificSet.size !== 0 ) {
             injectedCSS.push(
-                `${Array.from(specificSet).join(',\n')}\n{${getHidingStyle()}}`
+                `${Array.from(specificSet).join(',\n')}\n{${getHidingStyle(request.tabId)}}` // adn
             );
         }
 
@@ -850,9 +850,9 @@ CosmeticFilteringEngine.prototype.retrieveSpecificSelectors = function(
                     out.exceptedFilters.push(pfilter.raw);
                     continue;
                 }
-                const cssRule = this.cssRuleFromProcedural(pfilter);
+                const cssRule = this.cssRuleFromProcedural(pfilter, request.tabId); // adn
                 if ( cssRule === undefined ) { continue; }
-                if (!µb.hiddenSettings.showAdsDebug) injectedCSS.push(cssRule);
+                injectedCSS.push(cssRule);
                 proceduralSet.delete(json);
                 out.convertedProceduralFilters.push(json);
             }
@@ -895,7 +895,7 @@ CosmeticFilteringEngine.prototype.retrieveSpecificSelectors = function(
                 out.exceptedFilters.push(...str.excepted);
             }
             if ( str.s.length !== 0 ) {
-                injectedCSS.push(`${str.s}\n{${getHidingStyle()}}`);
+                injectedCSS.push(`${str.s}\n{${getHidingStyle(request.tabId)}}`); // adn
             }
         }
     }
@@ -922,14 +922,14 @@ CosmeticFilteringEngine.prototype.retrieveSpecificSelectors = function(
     if ( cacheEntry ) {
         const networkFilters = [];
         if ( cacheEntry.retrieveNet(networkFilters) ) {
-            details.code = `${networkFilters.join('\n')}\n{${getHidingStyle()}}`;
+            details.code = `${networkFilters.join('\n')}\n{${getHidingStyle(request.tabId)}}`; // adn
             if ( request.tabId !== undefined && options.dontInject !== true) {
                 vAPI.tabs.insertCSS(request.tabId, details);
             }
         }
 
         if ( out.fake.length !== 0 ) { // ADN inject fake hide rules to trigger hiding of blocked elements even if there are no cosmetic filters
-            details.code = out.fake + `\n{${getHidingStyle()}}`;
+            details.code = out.fake + `\n{${getHidingStyle(request.tabId)}}`;
 						if (!adnauseam.contentPrefs(request.hostname).hidingDisabled) { // ADN
 							vAPI.tabs.insertCSS(request.tabId, details);
 						}

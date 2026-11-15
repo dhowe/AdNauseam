@@ -111,10 +111,6 @@
     "message": "This page respects <b>Do Not Track</b>, just so you know.",
     "description": "English: Notifications -> This page respects Do Not Track, just so you know."
   },
-  "adnNotificationShowAdsDebug": {
-    "message": "The Advanced Setting \"Show Ads Debug\" is turned on",
-    "description": "English: Notifications -> The Advanced Setting \"Show Ads Debug\" is turned on"
-  },
   "adnNewerVersionAvailableNotification": {
     "message": "A newer version of AdNauseam is available",
     "description": "English: Notifications -> A newer version of AdNauseam is available"
@@ -558,10 +554,6 @@
   "uBlockPanelDefault": {
     "message": "Open the uBlock panel by default",
     "description": "English: Open the uBlock panel by default"
-  },
-  "showAdsDebugPrompt": {
-    "message": "Show ads for ad-collection debugging",
-    "description": "English: Show ads for ad-collection debugging"
   },
   "removeAdsInPrivate": {
     "message": "Remove ads collected in private mode",

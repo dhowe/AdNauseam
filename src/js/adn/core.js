@@ -61,7 +61,6 @@ import {
   addNotification,
   removeNotification,
   hasDNTNotification,
-  ShowAdsDebug,
   OperaSetting,
   FirefoxSetting,
   AdBlockerEnabled,
@@ -2199,7 +2198,6 @@ const adnauseam = (function () {
     verifySetting(HidingDisabled, !µb.userSettings.hidingAds);
     verifySetting(ClickingDisabled, !µb.userSettings.clickingAds);
     verifySetting(BlockingDisabled, !µb.userSettings.blockingMalware);
-    verifySetting(ShowAdsDebug, µb.hiddenSettings.showAdsDebug);
   };
 
   const verifyLists = exports.verifyLists = function () {

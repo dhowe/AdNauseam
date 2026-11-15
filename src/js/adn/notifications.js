@@ -341,15 +341,6 @@ const PrivacyMode = new Notification({
 });
 PrivacyMode.func = openAdnPage.bind(PrivacyMode);
 
-export const ShowAdsDebug = new Notification({
-	name: "showAdsDebug",
-	text: "adnNotificationShowAdsDebug",
-	prop: "showAdsDebug",
-	button: undefined,
-	expected: false,
-	type: WARNING,
-});
-
 // https://github.com/dhowe/AdNauseam/issues/2263
 export const ReloadTab = new Notification({
 	name: "RefreshTab",
@@ -390,7 +381,6 @@ export const Notifications = [
 	FirefoxSetting,
 	OperaSetting,
 	PrivacyMode,
-	ShowAdsDebug,
 	ReloadTab,
 	NewerVersionAvailable,
 	OpenLetter,

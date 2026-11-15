@@ -854,11 +854,9 @@ const onMessage = function(request, sender, callback) {
         break;
 
     /* Adn */
-    case 'getShowAdsDebug':
+    case 'getHideStyle':
         response = {
-            showAdsDebug: µb.hiddenSettings.showAdsDebug,
-            hidingStyleDebug: µb.hiddenSettings.hidingStyleDebug,
-            hidingStyleNormal: µb.hiddenSettings.hidingStyleNormal,
+            hideStyle: µb.getHidingStyle(sender.tabId),
         };
         break;
     /* end of Adn */

@@ -43,7 +43,6 @@ import {
 } from './filtering-engines.js';
 
 import {
-    ShowAdsDebug,
     BlockingDisabled,
     ClickingDisabled,
     HidingDisabled
@@ -86,6 +85,17 @@ import { redirectEngine } from './redirect-engine.js';
     if ( r === 0 ) { return 0; }
     this.saveStrictBlockList();
     return r;
+};
+
+// The style hiding ads in a tab: plain display:none when strict-blocking, see #2864
+µb.getHidingStyle = function(tabId) {
+    const hs = this.hiddenSettings;
+    if ( this.userSettings.strictBlockingMode ) { return hs.hidingStyleStrict; }
+    const pageStore = this.pageStoreFromTabId(tabId);
+    if ( pageStore !== null && pageStore.getIsPageStrictBlocked() ) {
+        return hs.hidingStyleStrict;
+    }
+    return hs.hidingStyleNormal;
 };
 
 /******************************************************************************/
@@ -250,18 +260,12 @@ import { redirectEngine } from './redirect-engine.js';
 µb.changeHiddenSettings = function(hs) {
     const mustReloadResources =
         hs.userResourcesLocation !== this.hiddenSettings.userResourcesLocation;
-    const changedShowAdsDebug = hs.showAdsDebug !== this.hiddenSettings.showAdsDebug; // Adn
     this.hiddenSettings = hs;
     this.saveHiddenSettings();
     if ( mustReloadResources ) {
         redirectEngine.invalidateResourcesSelfie(io);
         this.loadRedirectResources();
     }
-    /* adn */
-    if (changedShowAdsDebug) {
-        adnauseam.verifySetting(ShowAdsDebug, hs.showAdsDebug);
-    }
-    /* end of adn */
     broadcast({ what: 'hiddenSettingsChanged' });
 };
 
