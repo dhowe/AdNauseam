@@ -791,7 +791,10 @@ flylordsmag.com##.td-header-header.td-header-row.td-container-header
 # Collecting Youtube Banner Ads #1353
 youtube.com#@#.sparkles-light-cta
 youtube.com#@#ytd-promoted-sparkles-web-renderer
-youtube.com##ytd-promoted-sparkles-web-renderer #sparkles-container:style(height: 0px !important; opacity: 0 !important;) 
+youtube.com##ytd-promoted-sparkles-web-renderer #sparkles-container:style(height: 0px !important; opacity: 0 !important;)
+
+! #2863
+youtube.com##ytd-rich-item-renderer:has(> #content > ytd-ad-slot-renderer):style(display: none !important;)
 
 www.hktvmall.com##.topBannerGa
 
