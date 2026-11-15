@@ -1614,7 +1614,7 @@ const webRequest = {
                     urls: ['http://*/*', 'https://*/*'],
                 },
                 // ADN: https://developer.chrome.com/extensions/webRequest
-                navigator.userAgent.includes('Firefox/') ?
+                isGecko ? // adn: not the user agent, which can be spoofed (#2801)
                     ['blocking', 'responseHeaders'] :
                     ['blocking', 'responseHeaders', 'extraHeaders']
             );
@@ -1627,7 +1627,7 @@ const webRequest = {
                      'urls': [ '<all_urls>' ],
                      'types': undefined
                  },
-                 navigator.userAgent.includes('Firefox/') ? [ 'blocking', 'requestHeaders'] : ['blocking', 'requestHeaders', 'extraHeaders'] //ADN
+                 isGecko ? [ 'blocking', 'requestHeaders'] : ['blocking', 'requestHeaders', 'extraHeaders'] //ADN
              );
             // end of ADN
             vAPI.net.addListener('onHeadersReceived', onHeadersReceived, {
