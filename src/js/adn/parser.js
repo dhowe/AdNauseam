@@ -520,11 +520,16 @@
     }
 
     const createImageAd = function (el, src, targetUrl) {
-      let wFallback = parseInt(el.getAttribute("width") || -1)
-      let hFallback = parseInt(el.getAttribute("height") || -1)
-      
-      const iw = el.naturalWidth || wFallback || el.getAttribute("clientWidth");
-      const ih = el.naturalHeight || hFallback || el.getAttribute("clientHeight");
+      // natural size, else the width/height attribute, else the rendered size (-1 if unknown)
+      const getSize = function (natural, attr, rendered) {
+        if (el[natural]) return el[natural];
+        const fromAttr = parseInt(el.getAttribute(attr));
+        if (!isNaN(fromAttr)) return fromAttr;
+        return el[rendered] || -1;
+      };
+
+      const iw = getSize('naturalWidth', 'width', 'clientWidth');
+      const ih = getSize('naturalHeight', 'height', 'clientHeight');
       const minDim = Math.min(iw, ih);
       const maxDim = Math.max(iw, ih);
 

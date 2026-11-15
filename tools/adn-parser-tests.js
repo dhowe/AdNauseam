@@ -152,6 +152,26 @@ QUnit.test('A gradient background is not collected as an image ad', async functi
     assert.strictEqual(win.testAds[0]?.contentData.src, image.src, 'The url() is used, not the gradient arguments');
 });
 
+QUnit.test('Images of unknown natural size are size-checked by their rendered size', async function(assert) {
+    const { win, doc } = await fixture();
+    const { image } = await adImage(win, doc);
+    const lazyAd = function(size, target) {
+        const lazy = doc.createElement('img');
+        lazy.alt = 'Lazy ad';
+        lazy.setAttribute('data-src', image.src);
+        lazy.style.cssText = 'display:block;' + size;
+        const link = doc.createElement('a');
+        link.href = target;
+        link.append(lazy);
+        doc.body.append(link);
+        return lazy;
+    };
+    win.vAPI.adCheck(lazyAd('width:20px;height:20px', 'https://ads.example/small'));
+    assert.strictEqual(win.testAds.length, 0, 'An unloaded 20x20 image is too small to be an ad');
+    win.vAPI.adCheck(lazyAd('width:300px;height:250px', 'https://ads.example/large'));
+    assert.strictEqual(win.testAds.length, 1, 'An unloaded 300x250 image is still collected');
+});
+
 QUnit.test('Nearby script source is not used as an image ad title', async function(assert) {
     const { win, doc } = await fixture();
     const container = doc.createElement('div');
