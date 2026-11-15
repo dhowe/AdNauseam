@@ -122,6 +122,7 @@ const userSettingsDefault = {
     disableWarnings: false, 
     blurCollectedAds: false,
     hideDeadAds: false,
+    uBlockPanelDefault: false, // ADN: toolbar icon opens the uBlock panel instead of the AdNauseam menu, see #1109
 
     clickingExceptions: '', // ADN: newline-separated domain list for per-site click control
     customBlockLists: false, // ADN: advanced option on the filter-lists page, use enabledBlockLists instead of the default set

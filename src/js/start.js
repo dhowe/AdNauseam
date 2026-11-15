@@ -220,6 +220,8 @@ const onUserSettingsReady = fetched => {
 
     fromFetch(µb.userSettings, fetched);
 
+    adnauseam.updatePopup(); // adn
+
     if ( µb.privacySettingsSupported ) {
         vAPI.browserSettings.set({
             'hyperlinkAuditing': !µb.userSettings.hyperlinkAuditingDisabled,

@@ -1918,8 +1918,15 @@ const adnauseam = (function () {
     }
   };
 
-  /* 
-   * checkAllowedException returns if the header was modified or not 
+  // page opened by the toolbar icon: the AdNauseam menu, or the uBlock panel
+  // when the "uBlockPanelDefault" option is on, see #1109
+  exports.updatePopup = function () {
+    const popup = µb.userSettings.uBlockPanelDefault ? 'popup-fenix.html' : 'menu.html';
+    browser.browserAction.setPopup({ popup });
+  };
+
+  /*
+   * checkAllowedException returns if the header was modified or not
    * if the cookie was removed, it returns the modified headers to the request on adnOnHeadersRecieved
    */
   exports.checkAllowedException = function (headers, requestUrl, originalUrl) {

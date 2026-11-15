@@ -208,6 +208,9 @@ import { redirectEngine } from './redirect-engine.js';
     case 'parseTextAds':
         adnauseam.updateBadges();
         break;
+    case 'uBlockPanelDefault':
+        adnauseam.updatePopup();
+        break;
     case 'hidingAds':
         adnauseam.verifySetting(HidingDisabled, !us.hidingAds);
         dnt.updateFilters();

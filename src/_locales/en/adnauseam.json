@@ -555,6 +555,10 @@
     "message": "Hide Dead ads",
     "description": "English: Hide Dead ads"
   },
+  "uBlockPanelDefault": {
+    "message": "Open the uBlock panel by default",
+    "description": "English: Open the uBlock panel by default"
+  },
   "showAdsDebugPrompt": {
     "message": "Show ads for ad-collection debugging",
     "description": "English: Show ads for ad-collection debugging"
